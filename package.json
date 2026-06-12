@@ -1,6 +1,6 @@
 {
   "name": "claudial",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Live World Cup 2026 fixtures in your terminal — goal, red-card and VAR takeovers included",
   "type": "module",
   "bin": {
