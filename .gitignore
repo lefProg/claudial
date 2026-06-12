@@ -1,0 +1,20 @@
+# local working docs (specs, plans)
+docs/
+
+# claude code
+.claude/
+.claude*
+CLAUDE.md
+CLAUDE.local.md
+
+# node
+node_modules/
+dist/
+*.tsbuildinfo
+npm-debug.log*
+
+# env & editor
+.env
+.env.*
+.vscode/
+.idea/
