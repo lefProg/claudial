@@ -18,3 +18,5 @@ npm-debug.log*
 .env.*
 .vscode/
 .idea/
+
+DATA.md
