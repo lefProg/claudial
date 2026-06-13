@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { liveLine, scoreLine } from '../src/statusline/line.js';
+import { liveLine, finishedLine, scoreLine } from '../src/statusline/line.js';
 import type { Match } from '../src/types.js';
 
 function m(over: Partial<Match>): Match {
@@ -12,30 +12,56 @@ function m(over: Partial<Match>): Match {
   };
 }
 
+const HOUR = 3600;
+const now = Date.UTC(2026, 5, 13, 18, 0, 0);
+const nowS = Math.floor(now / 1000);
+
 describe('liveLine', () => {
   it('renders code, em-dash score and minute', () => {
     expect(liveLine(m({}))).toBe("⚽ QAT 0—1 SUI 67'");
   });
-  it('renders HT at halftime with no minute', () => {
+  it('renders HT at halftime', () => {
     expect(liveLine(m({ status: 'halftime', minute: null }))).toBe('⚽ QAT 0—1 SUI HT');
   });
-  it('treats null scores as 0', () => {
-    expect(liveLine(m({ homeScore: null, awayScore: null }))).toBe("⚽ QAT 0—0 SUI 67'");
+});
+
+describe('finishedLine', () => {
+  it('renders the result with FT', () => {
+    expect(finishedLine(m({ status: 'finished', minute: null, homeScore: 2, awayScore: 1 })))
+      .toBe('⚽ QAT 2—1 SUI FT');
   });
 });
 
 describe('scoreLine', () => {
-  const now = Date.UTC(2026, 5, 13, 0, 0, 0);
-  it('joins multiple live matches with two spaces', () => {
+  it('joins live matches when any are live', () => {
     const a = m({ id: 1 });
     const b = m({ id: 2, home: { name: 'Brazil', code: 'BRA' }, away: { name: 'Spain', code: 'ESP' }, homeScore: 2, awayScore: 2, minute: 30 });
-    expect(scoreLine([a, b], [], now)).toBe("⚽ QAT 0—1 SUI 67'  ⚽ BRA 2—2 ESP 30'");
+    expect(scoreLine([a, b], [], [], now)).toBe("⚽ QAT 0—1 SUI 67'  ⚽ BRA 2—2 ESP 30'");
   });
-  it('falls back to next kickoff when nothing live', () => {
-    const up = m({ status: 'upcoming', homeScore: null, awayScore: null, home: { name: 'Brazil', code: 'BRA' }, away: { name: 'Morocco', code: 'MOR' }, startTimestamp: Math.floor(Date.UTC(2026, 5, 15, 18, 0, 0) / 1000) });
-    expect(scoreLine([], [up], now)).toMatch(/^○ BRA—MOR /);
+
+  it('shows the finished result when now is closer to its end than to next kickoff', () => {
+    const fin = m({ id: 1, status: 'finished', minute: null, homeScore: 2, awayScore: 1, startTimestamp: nowS - (2 * HOUR - 5 * 60) });
+    const next = m({ id: 2, status: 'upcoming', homeScore: null, awayScore: null, home: { name: 'Brazil', code: 'BRA' }, away: { name: 'Morocco', code: 'MOR' }, startTimestamp: nowS + 3 * HOUR });
+    expect(scoreLine([], [fin], [next], now)).toBe('⚽ QAT 2—1 SUI FT');
   });
-  it('returns empty string when nothing live or upcoming', () => {
-    expect(scoreLine([], [], now)).toBe('');
+
+  it('shows the next kickoff when now is closer to it than to the last finish', () => {
+    const fin = m({ id: 1, status: 'finished', minute: null, homeScore: 2, awayScore: 1, startTimestamp: nowS - 6 * HOUR });
+    const next = m({ id: 2, status: 'upcoming', homeScore: null, awayScore: null, home: { name: 'Brazil', code: 'BRA' }, away: { name: 'Morocco', code: 'MOR' }, startTimestamp: nowS + 30 * 60 });
+    expect(scoreLine([], [fin], [next], now)).toMatch(/^○ BRA—MOR /);
+  });
+
+  it('picks the latest finished by kickoff', () => {
+    const older = m({ id: 1, status: 'finished', minute: null, homeScore: 0, awayScore: 0, startTimestamp: nowS - 5 * HOUR });
+    const newer = m({ id: 2, status: 'finished', minute: null, homeScore: 3, awayScore: 0, home: { name: 'Italy', code: 'ITA' }, away: { name: 'Peru', code: 'PER' }, startTimestamp: nowS - 2 * HOUR });
+    expect(scoreLine([], [older, newer], [], now)).toBe('⚽ ITA 3—0 PER FT');
+  });
+
+  it('handles only-finished, only-next, and neither', () => {
+    const fin = m({ id: 1, status: 'finished', minute: null, homeScore: 1, awayScore: 0, startTimestamp: nowS - 3 * HOUR });
+    expect(scoreLine([], [fin], [], now)).toBe('⚽ QAT 1—0 SUI FT');
+    const next = m({ id: 2, status: 'upcoming', homeScore: null, awayScore: null, startTimestamp: nowS + HOUR });
+    expect(scoreLine([], [], [next], now)).toMatch(/^○ QAT—SUI /);
+    expect(scoreLine([], [], [], now)).toBe('');
   });
 });
