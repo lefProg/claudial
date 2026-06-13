@@ -4,10 +4,11 @@
 
 ### Live World Cup 2026 in your terminal — goal and red-card takeovers included
 
-One line. Zero install. Every score, while you work.
+One command. Every World Cup score, in your terminal and right inside Claude
+Code, while you work.
 
 ```
-npx claudial && claudial setup
+npm install -g claudial && claudial setup
 ```
 
 <br/>
