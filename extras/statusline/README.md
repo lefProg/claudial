@@ -1,5 +1,10 @@
 # claudial × Claude Code statusline
 
+> **Note:** This bash script is the original statusline and is kept for
+> reference. The supported install is now `claudial setup`, which uses the
+> built-in, dependency-free `claudial --statusline` command (no curl/jq/flock,
+> works on macOS and Windows too). See the [main README](../../README.md).
+
 Live World Cup scores rendered inside Claude Code's status bar — under the
 input box, always visible while Claude works.
 
