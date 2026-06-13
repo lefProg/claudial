@@ -9,7 +9,35 @@ process.stdout.on('error', (err: NodeJS.ErrnoException) => {
   throw err;
 });
 
+function readStdin(): Promise<string> {
+  return new Promise((resolve) => {
+    if (process.stdin.isTTY) { resolve(''); return; }
+    let data = '';
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', (c) => { data += c; });
+    process.stdin.on('end', () => resolve(data));
+    process.stdin.on('error', () => resolve(data));
+  });
+}
+
 async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+
+  if (args.includes('--statusline')) {
+    const input = await readStdin();
+    const { runStatusline, defaultDeps } = await import('./statusline/run.js');
+    const line = await runStatusline(input, defaultDeps());
+    process.stdout.write(line);
+    process.exit(0);
+  }
+
+  if (args[0] === 'setup') {
+    // @ts-ignore — module created in a later task
+    const { runSetup } = await import('./setup/index.js');
+    await runSetup(args.slice(1));
+    process.exit(0);
+  }
+
   let seasonId: number;
   try {
     seasonId = await resolveSeasonId();
