@@ -2,15 +2,24 @@ import { useEffect, useReducer, useRef } from 'react';
 import { Box, useApp, useInput } from 'ink';
 import { initialState, reducer } from '../state.js';
 import { startPoller, type Poller, type PollerDeps } from '../engine/poller.js';
+import type { Match } from '../types.js';
 import { fetchIncidents, fetchLive, fetchRecent, fetchUpcoming } from '../api/espn.js';
 import { Header } from './Header.js';
-import { LiveSection } from './LiveSection.js';
+import { DaySection } from './DaySection.js';
+import { partitionByDay } from './fixtures.js';
 import { UpcomingSection } from './UpcomingSection.js';
 import { Footer } from './Footer.js';
 import { TakeoverView } from './TakeoverView.js';
 import { Ticker } from './Ticker.js';
 
 export type Mode = 'board' | 'ticker';
+
+function dedupeById(matches: Match[]): Match[] {
+  const seen = new Set<number>();
+  const out: Match[] = [];
+  for (const m of matches) if (!seen.has(m.id)) { seen.add(m.id); out.push(m); }
+  return out;
+}
 
 export function App({ seasonId, mode = 'board' }: { seasonId: number; mode?: Mode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -52,11 +61,15 @@ export function App({ seasonId, mode = 'board' }: { seasonId: number; mode?: Mod
     return <Ticker live={state.live} upcoming={state.upcoming} takeover={playing} />;
   }
 
+  const all = dedupeById([...state.live, ...state.recent, ...state.upcoming]);
+  const { yesterday, today, future } = partitionByDay(all, Date.now());
+
   return (
     <Box flexDirection="column" paddingX={1} paddingY={1}>
       <Header stale={state.stale} lastUpdated={state.lastUpdated} />
-      <LiveSection matches={state.live} recent={state.recent} incidents={state.incidents} compact={compact} />
-      <UpcomingSection matches={state.upcoming} compact={compact} />
+      <DaySection label="TODAY" matches={today} incidents={state.incidents} compact={compact} />
+      <DaySection label="YESTERDAY" matches={yesterday} incidents={state.incidents} compact={compact} />
+      <UpcomingSection matches={future} compact={compact} />
       <Footer />
     </Box>
   );
