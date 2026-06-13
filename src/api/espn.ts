@@ -43,6 +43,13 @@ function todayRange(daysAhead: number): string {
   return `${start}-${yyyymmdd(end)}`;
 }
 
+// Past date range "YYYYMMDD-YYYYMMDD" from (today - daysBack) through today (UTC).
+export function pastRange(daysBack: number, now: number = Date.now()): string {
+  const end = new Date(now);
+  const start = new Date(now - daysBack * 86_400_000);
+  return `${yyyymmdd(start)}-${yyyymmdd(end)}`;
+}
+
 // Kept for call-site compatibility; ESPN needs no season id to query.
 export async function resolveSeasonId(): Promise<number> {
   return 2026;
@@ -62,8 +69,11 @@ export async function fetchUpcoming(_seasonId: number): Promise<Match[]> {
 }
 
 export async function fetchRecent(_seasonId: number): Promise<Match[]> {
-  const events = await scoreboard(todayRange(0));
-  return events.map(parseEvent).filter((m) => m.status === 'finished');
+  const events = await scoreboard(pastRange(1));
+  return events
+    .map(parseEvent)
+    .filter((m) => m.status === 'finished')
+    .sort((a, b) => a.startTimestamp - b.startTimestamp);
 }
 
 export async function fetchIncidents(eventId: number): Promise<MatchIncident[]> {
