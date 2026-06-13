@@ -2,6 +2,7 @@ import { Box, Text } from 'ink';
 import type { Match, MatchIncident } from '../types.js';
 import { ACCENT } from './Header.js';
 import { formatKickoff } from './UpcomingSection.js';
+import { homeTag, awayTag } from './flags.js';
 
 export function ScorerLine({ incidents }: { incidents: MatchIncident[] }) {
   const goals = incidents.filter((i) => i.kind === 'goal');
@@ -35,12 +36,12 @@ export function MatchRow({ m, incidents, compact }: {
 }) {
   if (m.status === 'upcoming') {
     if (compact) {
-      return <Text dimColor>○ {m.home.code}—{m.away.code} {formatKickoff(m.startTimestamp)}</Text>;
+      return <Text dimColor>○ {homeTag(m.home.code)} — {awayTag(m.away.code)} {formatKickoff(m.startTimestamp)}</Text>;
     }
     return (
       <Text>
         <Text dimColor>○ {formatKickoff(m.startTimestamp).padEnd(13)}</Text>
-        {m.home.name} — {m.away.name}
+        {homeTag(m.home.code)} — {awayTag(m.away.code)}
         {m.group ? <Text dimColor>  ·  {m.group}</Text> : null}
       </Text>
     );
@@ -50,7 +51,7 @@ export function MatchRow({ m, incidents, compact }: {
       <Text>
         <Text color={m.status === 'finished' ? undefined : ACCENT}>⏺</Text>
         <Text dimColor> {statusLabel(m)} </Text>
-        {m.home.code} <Text bold color={ACCENT}>{m.homeScore ?? '–'}—{m.awayScore ?? '–'}</Text> {m.away.code}
+        {homeTag(m.home.code)} <Text bold color={ACCENT}>{m.homeScore ?? '–'}—{m.awayScore ?? '–'}</Text> {awayTag(m.away.code)}
         {m.varInProgress ? <Text dimColor> ⚖</Text> : null}
       </Text>
     );
@@ -64,7 +65,7 @@ export function MatchRow({ m, incidents, compact }: {
         {m.varInProgress ? <Text dimColor>  ·  ⚖ VAR</Text> : null}
       </Text>
       <Text>
-        {'   '}{m.home.name}  <Text bold color={ACCENT}>{m.homeScore ?? '–'} — {m.awayScore ?? '–'}</Text>  {m.away.name}
+        {'   '}{homeTag(m.home.code)}  <Text bold color={ACCENT}>{m.homeScore ?? '–'} — {m.awayScore ?? '–'}</Text>  {awayTag(m.away.code)}
       </Text>
       <ScorerLine incidents={incidents} />
       <FeedLine incidents={incidents} />

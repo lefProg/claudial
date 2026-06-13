@@ -33,11 +33,11 @@ function deps(over = {}) {
 describe('runStatusline', () => {
   it('fetches, caches and appends the branch', async () => {
     const out = await runStatusline('{}', deps(), 1000);
-    expect(out).toBe("⚽ QAT 0—1 SUI 67' · main");
+    expect(out).toBe("⚽ QAT 🇶🇦 0—1 🇨🇭 SUI 67' · main");
   });
   it('omits the separator when there is no branch', async () => {
     const out = await runStatusline('{}', deps({ branchOf: () => null }), 1000);
-    expect(out).toBe("⚽ QAT 0—1 SUI 67'");
+    expect(out).toBe("⚽ QAT 🇶🇦 0—1 🇨🇭 SUI 67'");
   });
   it('falls back to cache when the fetch throws', async () => {
     const c = makeCache(dir);

@@ -32,15 +32,15 @@ your local time below. Auto-refreshing while you work.
  ▝▜█████▛▘  ───────────────────────
 
  ⏺ LIVE 67'
-   Argentina  2 — 1  Mexico
+   ARG 🇦🇷  2 — 1  🇲🇽 MEX
    ⚽ 23' Messi · 51' Álvarez | 44' Lozano
 
  ⏺ LIVE 12'
-   France  0 — 0  Senegal
+   FRA 🇫🇷  0 — 0  🇸🇳 SEN
 
  ○ UPCOMING
-   18:00  Brazil — Croatia
-   21:00  Spain — Morocco
+   18:00  BRA 🇧🇷 — 🇭🇷 CRO
+   21:00  ESP 🇪🇸 — 🇲🇦 MAR
 
  r refresh · q quit
 ```
@@ -57,7 +57,7 @@ takes over:
 
          LIONEL MESSI · 23'
 
-      ARGENTINA  2 — 1  MEXICO
+      ARG 🇦🇷  2 — 1  🇲🇽 MEX
 
 
 ```
@@ -66,55 +66,26 @@ Four seconds of glory, then back to the board.
 
 ## Claude Code, World Cup edition
 
-The whole point. Two commands and your Claude Code becomes a World Cup
-workstation — Claude working on top, every live score ticking in a strip
-below, forever.
-
-Needs [tmux](https://github.com/tmux/tmux) (`sudo pacman -S tmux` /
-`sudo apt install tmux` / `brew install tmux`), then:
-
-```bash
-npm install -g claudial
-cat >> ~/.zshrc <<'EOF'
-alias claude-mundial="tmux new-session 'claude' \; split-window -v -l 5 'claudial --ticker' \; select-pane -U"
-EOF
-```
-
-Open a new shell, type `claude-mundial`, and:
-
-```
-┌──────────────────────────────────────┐
-│ > implement the parser               │
-│                                      │
-│ ⏺ Working…                           │
-│                                      │
-├──────────────────────────────────────┤
-│ ⏺ 67' QAT 0—1 SUI                    │
-│ ○ BRA—MOR Sun 01:00                  │
-└──────────────────────────────────────┘
-```
-
-When a goal goes in, the strip lights up while Claude keeps working.
-(`bash` users: append to `~/.bashrc` instead. Prefer the full board beside
-Claude rather than a strip below? Use
-`split-window -h -l 44 'claudial'` in the alias.)
-
-Don't want to hand-edit your shell config? `claudial setup --tmux` appends the
-right alias for you — zsh, bash or fish — idempotently.
-
-Want the score *inside* Claude Code itself — in its status bar, no tmux at
-all? Install everything in one step:
+The whole point: your Claude Code, score-aware. One command and the live score
+sits right in Claude Code's status bar — under the input box, always visible
+while Claude works, with nothing to wire up by hand.
 
 ```bash
 npm install -g claudial
 claudial setup
 ```
 
-The wizard adds a live-score statusline (`⚽ QAT 0—1 SUI 67' · main`, refreshed
-every few seconds) to your Claude Code settings, and can also wire up the tmux
-ticker alias below. It works on zsh, bash and fish, and the statusline itself
-is pure Node — no `jq`/`flock`/`curl`, so it runs on macOS and Windows too.
-Non-interactive: `claudial setup --statusline --global --tmux --shell zsh --yes`.
+The wizard drops a live-score statusline into your Claude Code settings:
+
+```
+⚽ QAT 🇶🇦 0—1 🇨🇭 SUI 67' · main          ← during a match
+○ QAT 🇶🇦 — 🇨🇭 SUI 10:00 PM · main        ← between matches (next kickoff, or last result)
+⚽ G O O O L  ·  ARG 🇦🇷 1—0 🇲🇽 MEX        ← for 15s whenever anyone scores
+```
+
+It refreshes every few seconds and is pure Node, so it runs on macOS and
+Windows too, in any shell. Restart Claude Code after setup to see it.
+Scriptable, no prompts: `claudial setup --statusline --global --yes`.
 
 ## Why a TUI
 

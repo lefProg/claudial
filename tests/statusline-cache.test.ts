@@ -57,7 +57,7 @@ describe('goal window', () => {
     c.updateGoalState([live({ homeScore: 1, awayScore: 0 })], 2000);
     const fired = c.activeGoalLine(2000);
     expect(fired).toContain('G O O O L');
-    expect(fired).toContain('ARG 1—0 MEX');
+    expect(fired).toContain('ARG 🇦🇷 1—0 🇲🇽 MEX');
     expect(c.activeGoalLine(2000 + GOAL_WINDOW_MS + 1)).toBeNull();
   });
   it('wraps the celebration in a real ANSI escape (ESC byte present)', () => {

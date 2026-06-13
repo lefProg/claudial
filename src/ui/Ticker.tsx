@@ -3,13 +3,14 @@ import type { Match, Takeover } from '../types.js';
 import { formatKickoff } from './UpcomingSection.js';
 import { ACCENT, RED } from './Header.js';
 import { spacedCaps } from '../banner.js';
+import { homeTag, awayTag } from './flags.js';
 
 function TickerTakeover({ t }: { t: Takeover }) {
   const color = t.kind === 'redcard' ? RED : ACCENT;
   const label = t.kind === 'goal' ? 'G O A L' : t.kind === 'redcard' ? 'R E D' : 'V A R';
   return (
     <Text bold color={color} wrap="truncate">
-      {label} · {t.who ? spacedCaps(t.who) : t.detail ?? ''} · {t.match.home.code} {t.homeScore}—{t.awayScore} {t.match.away.code}
+      {label} · {t.who ? spacedCaps(t.who) : t.detail ?? ''} · {homeTag(t.match.home.code)} {t.homeScore}—{t.awayScore} {awayTag(t.match.away.code)}
     </Text>
   );
 }
@@ -24,12 +25,12 @@ export function Ticker({ live, upcoming, takeover }: {
         <Text key={m.id} wrap="truncate">
           <Text color={ACCENT}>⏺</Text>
           <Text dimColor> {m.minute != null ? `${m.minute}'` : m.status === 'halftime' ? 'HT' : m.status === 'finished' ? 'FT' : ''} </Text>
-          {m.home.code} <Text bold color={ACCENT}>{m.homeScore ?? '–'}—{m.awayScore ?? '–'}</Text> {m.away.code}
+          {homeTag(m.home.code)} <Text bold color={ACCENT}>{m.homeScore ?? '–'}—{m.awayScore ?? '–'}</Text> {awayTag(m.away.code)}
           {m.varInProgress ? <Text dimColor> ⚖</Text> : null}
         </Text>
       ))}
       {upcoming[0] ? (
-        <Text dimColor wrap="truncate">○ {upcoming[0].home.code}—{upcoming[0].away.code} {formatKickoff(upcoming[0].startTimestamp)}</Text>
+        <Text dimColor wrap="truncate">○ {homeTag(upcoming[0].home.code)} — {awayTag(upcoming[0].away.code)} {formatKickoff(upcoming[0].startTimestamp)}</Text>
       ) : null}
     </Box>
   );

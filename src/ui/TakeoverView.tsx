@@ -2,6 +2,7 @@ import { Box, Text } from 'ink';
 import type { Takeover } from '../types.js';
 import { GOAL_ART, VAR_ART, RED_CARD_ART, spacedCaps } from '../banner.js';
 import { ACCENT, RED } from './Header.js';
+import { homeTag, awayTag } from './flags.js';
 
 const ART: Record<Takeover['kind'], { art: string[]; color: string; caption: string | null }> = {
   goal: { art: GOAL_ART, color: ACCENT, caption: null },
@@ -28,9 +29,9 @@ export function TakeoverView({ takeover }: { takeover: Takeover }) {
         </Text>
         {takeover.detail ? <Text dimColor wrap="truncate">{takeover.detail}</Text> : null}
         <Text wrap="truncate">
-          <Text dimColor>{match.home.name.toUpperCase()}  </Text>
+          <Text dimColor>{homeTag(match.home.code)}  </Text>
           <Text bold color={ACCENT}>{takeover.homeScore} — {takeover.awayScore}</Text>
-          <Text dimColor>  {match.away.name.toUpperCase()}</Text>
+          <Text dimColor>  {awayTag(match.away.code)}</Text>
         </Text>
       </Box>
     );
@@ -54,9 +55,9 @@ export function TakeoverView({ takeover }: { takeover: Takeover }) {
         <Box marginTop={1}><Text dimColor>{takeover.detail}</Text></Box>
       ) : null}
       <Box marginTop={1}>
-        <Text dimColor>{match.home.name.toUpperCase()}  </Text>
+        <Text dimColor>{homeTag(match.home.code)}  </Text>
         <Text bold color={ACCENT}>{takeover.homeScore} — {takeover.awayScore}</Text>
-        <Text dimColor>  {match.away.name.toUpperCase()}</Text>
+        <Text dimColor>  {awayTag(match.away.code)}</Text>
       </Box>
     </Box>
   );

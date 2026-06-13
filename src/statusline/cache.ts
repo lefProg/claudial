@@ -5,6 +5,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Match } from '../types.js';
+import { homeTag, awayTag } from '../ui/flags.js';
 
 export const TTL_MS = 10_000;
 export const GOAL_WINDOW_MS = 15_000;
@@ -15,7 +16,7 @@ const GOAL_OPEN = '\x1b[1;38;2;217;119;87m';
 const GOAL_CLOSE = '\x1b[0m';
 
 function goalText(m: Match): string {
-  return `${GOAL_OPEN}⚽ G O O O L  ·  ${m.home.code} ${m.homeScore ?? 0}—${m.awayScore ?? 0} ${m.away.code}${GOAL_CLOSE}`;
+  return `${GOAL_OPEN}⚽ G O O O L  ·  ${homeTag(m.home.code)} ${m.homeScore ?? 0}—${m.awayScore ?? 0} ${awayTag(m.away.code)}${GOAL_CLOSE}`;
 }
 
 export interface StatuslineCache {
