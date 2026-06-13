@@ -60,6 +60,14 @@ describe('goal window', () => {
     expect(fired).toContain('ARG 1—0 MEX');
     expect(c.activeGoalLine(2000 + GOAL_WINDOW_MS + 1)).toBeNull();
   });
+  it('wraps the celebration in a real ANSI escape (ESC byte present)', () => {
+    const c = makeCache(dir);
+    c.updateGoalState([live({ homeScore: 0, awayScore: 0 })], 1000);
+    c.updateGoalState([live({ homeScore: 1, awayScore: 0 })], 2000);
+    const fired = c.activeGoalLine(2000)!;
+    expect(fired.startsWith('\x1b[1;38;2;217;119;87m')).toBe(true);
+    expect(fired.endsWith('\x1b[0m')).toBe(true);
+  });
 });
 
 describe('constants', () => {
