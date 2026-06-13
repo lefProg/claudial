@@ -23,18 +23,17 @@ function readStdin(): Promise<string> {
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
+  if (args[0] === 'setup') {
+    const { runSetup } = await import('./setup/index.js');
+    await runSetup(args.slice(1));
+    process.exit(0);
+  }
+
   if (args.includes('--statusline')) {
     const input = await readStdin();
     const { runStatusline, defaultDeps } = await import('./statusline/run.js');
     const line = await runStatusline(input, defaultDeps());
     process.stdout.write(line);
-    process.exit(0);
-  }
-
-  if (args[0] === 'setup') {
-    // @ts-ignore — module created in a later task
-    const { runSetup } = await import('./setup/index.js');
-    await runSetup(args.slice(1));
     process.exit(0);
   }
 
