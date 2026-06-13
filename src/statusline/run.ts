@@ -15,10 +15,11 @@ export interface RunDeps {
 const PLACEHOLDER = '⚽ claudial · warming up';
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    p,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
-  ]);
+  let id: ReturnType<typeof setTimeout>;
+  const timer = new Promise<T>((_, reject) => {
+    id = setTimeout(() => reject(new Error('timeout')), ms);
+  });
+  return Promise.race([p, timer]).finally(() => clearTimeout(id));
 }
 
 export async function runStatusline(input: string, deps: RunDeps, now: number = Date.now()): Promise<string> {
