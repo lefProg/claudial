@@ -53,11 +53,28 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
+  if (args.includes('--mock-redcard')) {
+    const { makeCache } = await import('./statusline/cache.js');
+    makeCache().armRedCard({ player: 'Otamendi', homeCode: 'ARG', awayCode: 'ENG' });
+    process.stdout.write('🟥 RED armed — the Claude Code status bar flashes a red card (ARG—ENG) for 15s.\n');
+    process.exit(0);
+  }
+
   if (args.includes('--statusline')) {
     const input = await readStdin();
     const { runStatusline, defaultDeps } = await import('./statusline/run.js');
-    const line = await runStatusline(input, defaultDeps());
-    process.stdout.write(line);
+    let out = await runStatusline(input, defaultDeps());
+    // --wrap '<cmd>': run the user's existing statusline with the same stdin and
+    // prepend its output, so claudial co-exists with their bar instead of replacing it.
+    const w = args.indexOf('--wrap');
+    if (w >= 0 && args[w + 1]) {
+      try {
+        const { execSync } = await import('node:child_process');
+        const theirs = execSync(args[w + 1], { input, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'], timeout: 2000 }).replace(/\n+$/, '');
+        if (theirs) out = `${theirs}  ${out}`;
+      } catch { /* their command failed — just show ours */ }
+    }
+    process.stdout.write(out);
     process.exit(0);
   }
 

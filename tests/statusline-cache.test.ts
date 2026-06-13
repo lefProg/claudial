@@ -78,6 +78,25 @@ describe('goal window', () => {
   });
 });
 
+describe('red cards', () => {
+  const rc = (id: string) => ({ id, homeCode: 'ARG', awayCode: 'ENG', player: 'Demirović', minute: 55 });
+  it('does not fire on first sighting, fires a new one after, expires after the window', () => {
+    const c = makeCache(dir);
+    c.updateRedCards([rc('a')], 1000); // first run → record only
+    expect(c.activeRedCardLine(1000)).toBeNull();
+    c.updateRedCards([rc('a'), rc('b')], 2000); // 'b' is new → fire
+    const fired = c.activeRedCardLine(2000);
+    expect(fired).toContain('R E D');
+    expect(fired).toContain('ENG');
+    expect(c.activeRedCardLine(2000 + GOAL_WINDOW_MS + 1)).toBeNull();
+  });
+  it('armRedCard fires directly', () => {
+    const c = makeCache(dir);
+    c.armRedCard({ player: 'Kane', homeCode: 'ARG', awayCode: 'ENG' }, 1000);
+    expect(c.activeRedCardLine(1000)).toContain('KANE');
+  });
+});
+
 describe('constants', () => {
   it('exports sane defaults', () => {
     expect(TTL_MS).toBe(10_000);

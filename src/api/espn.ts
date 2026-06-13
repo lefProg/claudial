@@ -1,6 +1,14 @@
 import { parseEvent, parseIncidents } from './parse.js';
 import type { Match, MatchIncident } from '../types.js';
 
+export interface RedCardEvent {
+  id: string; // stable per incident (content-derived) — used to fire each red once
+  homeCode: string;
+  awayCode: string;
+  player: string;
+  minute: number | null;
+}
+
 // ESPN's public soccer scoreboard for the FIFA World Cup (league fifa.world).
 // Keyless, served openly to ESPN's own web/apps, facts-only. One call returns
 // every match for a date (or date range) with goals and cards inline.
@@ -112,4 +120,22 @@ export async function fetchIncidents(eventId: number): Promise<MatchIncident[]> 
   const events = await scoreboard(todayRange(0));
   const event = events.find((e: any) => Number(e.id) === eventId);
   return event ? parseIncidents(event) : [];
+}
+
+// Red cards in currently-live matches, drawn from the same scoreboard response
+// fetchLive uses (its details carry cards inline) — so no extra network call.
+export async function fetchLiveRedCards(): Promise<RedCardEvent[]> {
+  if (MOCK) return [];
+  const events = await scoreboard(todayRange(0));
+  const out: RedCardEvent[] = [];
+  for (const e of events) {
+    const m = parseEvent(e);
+    if (m.status !== 'live' && m.status !== 'halftime') continue;
+    for (const inc of parseIncidents(e)) {
+      if (inc.kind === 'redCard') {
+        out.push({ id: inc.id, homeCode: m.home.code, awayCode: m.away.code, player: inc.playerShort ?? inc.player ?? '?', minute: inc.minute });
+      }
+    }
+  }
+  return out;
 }

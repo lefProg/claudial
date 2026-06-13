@@ -50,11 +50,15 @@ The wizard drops a live-score statusline into your Claude Code settings:
 ⚽ QAT 🇶🇦 0—1 🇨🇭 SUI 67' · main          ← during a match
 ○ QAT 🇶🇦 — 🇨🇭 SUI 10:00 PM · main        ← between matches (next kickoff, or last result)
 ⚽ G O O O L  ·  ARG 🇦🇷 1—0 🇲🇽 MEX        ← for 15s whenever anyone scores
+🟥 R E D  ·  OTAMENDI  ·  ARG 🇦🇷 — 🇲🇽 MEX  ← for 15s on a red card
 ```
 
 It refreshes every few seconds and is pure Node, so it runs on macOS and
 Windows too, in any shell. Restart Claude Code after setup to see it.
 Scriptable, no prompts: `claudial setup --statusline --global --yes`.
+
+**Already run a custom status line?** `claudial setup` keeps it — it wraps your
+existing one and appends the score, so nothing you had is lost.
 
 ## The full dashboard
 

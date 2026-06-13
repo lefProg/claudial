@@ -5,6 +5,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Match } from '../types.js';
+import type { RedCardEvent } from '../api/espn.js';
 import { homeTag, awayTag } from '../ui/flags.js';
 
 export const TTL_MS = 10_000;
@@ -14,9 +15,15 @@ const LOCK_STALE_MS = 30_000;
 // ACCENT #D97757 → truecolor; bold. Matches the old bash celebration styling.
 const GOAL_OPEN = '\x1b[1;38;2;217;119;87m';
 const GOAL_CLOSE = '\x1b[0m';
+// RED #E5484D — the red-card flash.
+const RED_OPEN = '\x1b[1;38;2;229;72;77m';
 
 function goalText(m: Match): string {
   return `${GOAL_OPEN}⚽ G O O O L  ·  ${homeTag(m.home.code)} ${m.homeScore ?? 0}—${m.awayScore ?? 0} ${awayTag(m.away.code)}${GOAL_CLOSE}`;
+}
+
+function redCardText(rc: { player: string; homeCode: string; awayCode: string }): string {
+  return `${RED_OPEN}🟥 R E D  ·  ${rc.player.toUpperCase()}  ·  ${homeTag(rc.homeCode)} — ${awayTag(rc.awayCode)}${GOAL_CLOSE}`;
 }
 
 export interface StatuslineCache {
@@ -27,6 +34,9 @@ export interface StatuslineCache {
   updateGoalState(live: Match[], now?: number): void;
   armGoal(match: Match, now?: number): void;
   activeGoalLine(now?: number): string | null;
+  updateRedCards(reds: RedCardEvent[], now?: number): void;
+  armRedCard(rc: { player: string; homeCode: string; awayCode: string }, now?: number): void;
+  activeRedCardLine(now?: number): string | null;
 }
 
 export function makeCache(dir: string = join(tmpdir(), 'claudial-statusline')): StatuslineCache {
@@ -36,6 +46,9 @@ export function makeCache(dir: string = join(tmpdir(), 'claudial-statusline')): 
   const stateFile = join(dir, 'goals.json');
   const goalFile = join(dir, 'goal');
   const goalTsFile = join(dir, 'goalts');
+  const redSeenFile = join(dir, 'redseen.json');
+  const redFile = join(dir, 'red');
+  const redTsFile = join(dir, 'redts');
 
   const atomicWrite = (path: string, data: string) => {
     const tmp = `${path}.tmp`;
@@ -101,6 +114,34 @@ export function makeCache(dir: string = join(tmpdir(), 'claudial-statusline')): 
       const ts = Number(readFileSync(goalTsFile, 'utf8'));
       if (!Number.isFinite(ts) || now - ts > GOAL_WINDOW_MS) return null;
       return readFileSync(goalFile, 'utf8');
+    },
+    updateRedCards(reds, now = Date.now()) {
+      const firstRun = !existsSync(redSeenFile);
+      const seen = new Set<string>(firstRun ? [] : (() => {
+        try { return JSON.parse(readFileSync(redSeenFile, 'utf8')) as string[]; } catch { return []; }
+      })());
+      let armed = false;
+      for (const rc of reds) {
+        if (seen.has(rc.id)) continue;
+        // First run never fires (don't replay pre-existing reds when first seen mid-match).
+        if (!firstRun && !armed) {
+          atomicWrite(redFile, redCardText(rc));
+          atomicWrite(redTsFile, String(now));
+          armed = true;
+        }
+        seen.add(rc.id);
+      }
+      atomicWrite(redSeenFile, JSON.stringify([...seen]));
+    },
+    armRedCard(rc, now = Date.now()) {
+      atomicWrite(redFile, redCardText(rc));
+      atomicWrite(redTsFile, String(now));
+    },
+    activeRedCardLine(now = Date.now()) {
+      if (!existsSync(redTsFile) || !existsSync(redFile)) return null;
+      const ts = Number(readFileSync(redTsFile, 'utf8'));
+      if (!Number.isFinite(ts) || now - ts > GOAL_WINDOW_MS) return null;
+      return readFileSync(redFile, 'utf8');
     },
   };
 }

@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { fetchLive as realFetchLive, fetchRecent as realFetchRecent, fetchUpcoming as realFetchUpcoming } from '../api/espn.js';
+import { fetchLive as realFetchLive, fetchRecent as realFetchRecent, fetchUpcoming as realFetchUpcoming, fetchLiveRedCards as realFetchLiveRedCards, type RedCardEvent } from '../api/espn.js';
 import { scoreLine } from './line.js';
 import { makeCache, TTL_MS, type StatuslineCache } from './cache.js';
 import { goalKickFrame } from './anim.js';
@@ -9,6 +9,7 @@ export interface RunDeps {
   fetchLive: () => Promise<Match[]>;
   fetchRecent: () => Promise<Match[]>;
   fetchUpcoming: (seasonId: number) => Promise<Match[]>;
+  fetchRedCards: () => Promise<RedCardEvent[]>;
   cache: StatuslineCache;
   branchOf: (input: string) => string | null;
   timeoutMs: number;
@@ -32,12 +33,13 @@ export async function runStatusline(input: string, deps: RunDeps, now: number = 
   const fresh = cached != null && cached.ageMs <= TTL_MS;
   if (!fresh && cache.tryLock(now)) {
     try {
-      const [liveM, recentM, upcomingM] = await withTimeout(
-        Promise.all([deps.fetchLive(), deps.fetchRecent(), deps.fetchUpcoming(2026)]),
+      const [liveM, recentM, upcomingM, redsM] = await withTimeout(
+        Promise.all([deps.fetchLive(), deps.fetchRecent(), deps.fetchUpcoming(2026), deps.fetchRedCards()]),
         deps.timeoutMs,
       );
       const next = scoreLine(liveM, recentM, upcomingM, now);
       cache.updateGoalState(liveM, now);
+      cache.updateRedCards(redsM, now);
       if (next) { cache.write(next, now); line = next; }
     } catch {
       // keep last good cache (line already set)
@@ -47,9 +49,9 @@ export async function runStatusline(input: string, deps: RunDeps, now: number = 
   }
 
   const goal = cache.activeGoalLine(now);
-  // The goal-kick animation plays ONLY during a goal celebration; idle and live
-  // lines are shown as-is.
-  const score = goal ? `${goalKickFrame(now)}  ${goal}` : (line ?? PLACEHOLDER);
+  const red = cache.activeRedCardLine(now);
+  // Goal → animated kick; red card → static flash; otherwise the idle/live line.
+  const score = goal ? `${goalKickFrame(now)}  ${goal}` : (red ?? line ?? PLACEHOLDER);
   const branch = deps.branchOf(input);
   return branch ? `${score} · ${branch}` : score;
 }
@@ -75,6 +77,7 @@ export function defaultDeps(): RunDeps {
     fetchLive: realFetchLive,
     fetchRecent: () => realFetchRecent(2026),
     fetchUpcoming: realFetchUpcoming,
+    fetchRedCards: realFetchLiveRedCards,
     cache: makeCache(),
     branchOf: defaultBranchOf,
     timeoutMs: 3000,

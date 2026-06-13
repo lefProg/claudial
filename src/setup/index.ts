@@ -27,6 +27,7 @@ function contextFor(opts: SetupOptions): ApplyContext {
 function printReport(opts: SetupOptions, ctx: ApplyContext, report: ReturnType<typeof applySetup>): void {
   if (report.statuslineWritten) {
     console.log(`✓ statusline installed → ${ctx.settingsPath}`);
+    if (report.statuslineWrapped) console.log('  (kept your existing status line and appended the score)');
     if (report.statuslineBackedUp) console.log(`  (previous settings backed up to ${ctx.settingsPath}.bak)`);
     console.log('  Restart Claude Code to see the score bar.');
   } else if (opts.statusline) {

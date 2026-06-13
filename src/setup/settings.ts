@@ -26,24 +26,43 @@ export function mergeSettings(
   return { settings: { ...existing, statusLine: block }, changed: true };
 }
 
-/** Read → merge → (backup) → write. Creates parent dirs and a .bak. */
+/** Read → (wrap existing) → merge → (backup) → write. Creates parent dirs and a .bak. */
 export function installStatusline(
   settingsPath: string,
   command: string,
   conflict: Conflict,
-): { written: boolean; backedUp: boolean } {
+): { written: boolean; backedUp: boolean; wrapped: boolean } {
   let existing: Record<string, any> = {};
   const fileExists = existsSync(settingsPath);
   if (fileExists) {
     try { existing = JSON.parse(readFileSync(settingsPath, 'utf8')); }
     catch { existing = {}; }
   }
-  const { settings, changed } = mergeSettings(existing, statusLineBlock(command), conflict);
-  if (!changed) return { written: false, backedUp: false };
+
+  // Co-exist with a user's existing statusLine: wrap a foreign command so both
+  // show (claudial runs theirs via --wrap and appends the score). If ours is
+  // already there, preserve any --wrap suffix and just refresh the rest.
+  const existingCmd = typeof existing?.statusLine?.command === 'string' ? existing.statusLine.command : '';
+  let finalCommand = command;
+  let wrapped = false;
+  if (existingCmd.includes('claudial --statusline')) {
+    const w = existingCmd.indexOf(' --wrap ');
+    if (w >= 0) { finalCommand = command + existingCmd.slice(w); wrapped = true; }
+  } else if (existingCmd) {
+    finalCommand = `${command} --wrap '${existingCmd.replace(/'/g, `'\\''`)}'`;
+    wrapped = true;
+  }
+
+  const block = statusLineBlock(finalCommand);
+  if (existing.statusLine && JSON.stringify(existing.statusLine) === JSON.stringify(block)) {
+    return { written: false, backedUp: false, wrapped };
+  }
+  const { settings, changed } = mergeSettings(existing, block, conflict);
+  if (!changed) return { written: false, backedUp: false, wrapped };
 
   let backedUp = false;
   if (fileExists) { copyFileSync(settingsPath, `${settingsPath}.bak`); backedUp = true; }
   mkdirSync(dirname(settingsPath), { recursive: true });
   writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n');
-  return { written: true, backedUp };
+  return { written: true, backedUp, wrapped };
 }

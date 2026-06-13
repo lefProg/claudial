@@ -56,4 +56,23 @@ describe('installStatusline', () => {
     expect(json.theme).toBe('dark');
     expect(json.statusLine.command).toBe('claudial --statusline');
   });
+
+  it('wraps an existing foreign statusLine instead of replacing it', () => {
+    const path = join(dir, 'settings.json');
+    writeFileSync(path, JSON.stringify({ statusLine: { type: 'command', command: 'my-bar.sh', refreshInterval: 5 } }));
+    const res = installStatusline(path, 'claudial --statusline', 'overwrite');
+    expect(res.written).toBe(true);
+    expect(res.wrapped).toBe(true);
+    const json = JSON.parse(readFileSync(path, 'utf8'));
+    expect(json.statusLine.command).toBe(`claudial --statusline --wrap 'my-bar.sh'`);
+  });
+
+  it('does not double-wrap when ours is already installed (preserves the wrap)', () => {
+    const path = join(dir, 'settings.json');
+    writeFileSync(path, JSON.stringify({ statusLine: { type: 'command', command: `claudial --statusline --wrap 'my-bar.sh'`, refreshInterval: 1 } }));
+    const res = installStatusline(path, 'claudial --statusline', 'overwrite');
+    expect(res.written).toBe(false); // identical → no churn
+    const json = JSON.parse(readFileSync(path, 'utf8'));
+    expect(json.statusLine.command).toBe(`claudial --statusline --wrap 'my-bar.sh'`);
+  });
 });

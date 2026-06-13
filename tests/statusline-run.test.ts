@@ -23,6 +23,7 @@ function deps(over = {}) {
     fetchLive: async () => [live()],
     fetchRecent: async () => [] as Match[],
     fetchUpcoming: async () => [] as Match[],
+    fetchRedCards: async () => [],
     cache: makeCache(dir),
     branchOf: () => 'main',
     timeoutMs: 3000,
@@ -65,6 +66,22 @@ describe('runStatusline', () => {
     }), 0);
     expect(out).toContain('G O O O L');
     expect(out).toContain('🥅'); // frame 0 carries the net
+  });
+
+  it('shows a static red-card flash (no kick animation) when one is active', async () => {
+    const c = makeCache(dir);
+    c.armRedCard({ player: 'Demirović', homeCode: 'ARG', awayCode: 'ENG' }, 0);
+    const out = await runStatusline('{}', deps({
+      cache: c,
+      fetchLive: async () => [] as Match[],
+      fetchRecent: async () => [] as Match[],
+      fetchUpcoming: async () => [] as Match[],
+      fetchRedCards: async () => [],
+      branchOf: () => null,
+    }), 0);
+    expect(out).toContain('R E D');
+    expect(out).toContain('DEMIROVIĆ');
+    expect(out).not.toContain('🥅');
   });
   it('fetches, caches and appends the branch', async () => {
     const out = await runStatusline('{}', deps(), 1000);

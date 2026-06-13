@@ -14,16 +14,18 @@ export interface ApplyContext {
 export interface ApplyReport {
   statuslineWritten: boolean;
   statuslineBackedUp: boolean;
+  statuslineWrapped: boolean;
   aliasAppended: boolean;
 }
 
 export function applySetup(opts: SetupOptions, ctx: ApplyContext): ApplyReport {
-  const report: ApplyReport = { statuslineWritten: false, statuslineBackedUp: false, aliasAppended: false };
+  const report: ApplyReport = { statuslineWritten: false, statuslineBackedUp: false, statuslineWrapped: false, aliasAppended: false };
 
   if (opts.statusline) {
     const r = installStatusline(ctx.settingsPath, ctx.command, ctx.conflict);
     report.statuslineWritten = r.written;
     report.statuslineBackedUp = r.backedUp;
+    report.statuslineWrapped = r.wrapped;
   }
   if (opts.tmux) {
     report.aliasAppended = appendAlias(ctx.rcPath, ctx.shell).appended;
