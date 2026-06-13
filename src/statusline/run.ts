@@ -1,11 +1,12 @@
 import { execFileSync } from 'node:child_process';
-import { fetchLive as realFetchLive, fetchUpcoming as realFetchUpcoming } from '../api/espn.js';
+import { fetchLive as realFetchLive, fetchRecent as realFetchRecent, fetchUpcoming as realFetchUpcoming } from '../api/espn.js';
 import { scoreLine } from './line.js';
 import { makeCache, TTL_MS, type StatuslineCache } from './cache.js';
 import type { Match } from '../types.js';
 
 export interface RunDeps {
   fetchLive: () => Promise<Match[]>;
+  fetchRecent: () => Promise<Match[]>;
   fetchUpcoming: (seasonId: number) => Promise<Match[]>;
   cache: StatuslineCache;
   branchOf: (input: string) => string | null;
@@ -30,11 +31,11 @@ export async function runStatusline(input: string, deps: RunDeps, now: number = 
   const fresh = cached != null && cached.ageMs <= TTL_MS;
   if (!fresh && cache.tryLock(now)) {
     try {
-      const [liveM, upcomingM] = await withTimeout(
-        Promise.all([deps.fetchLive(), deps.fetchUpcoming(2026)]),
+      const [liveM, recentM, upcomingM] = await withTimeout(
+        Promise.all([deps.fetchLive(), deps.fetchRecent(), deps.fetchUpcoming(2026)]),
         deps.timeoutMs,
       );
-      const next = scoreLine(liveM, upcomingM, now);
+      const next = scoreLine(liveM, recentM, upcomingM, now);
       cache.updateGoalState(liveM, now);
       if (next) { cache.write(next, now); line = next; }
     } catch {
@@ -68,6 +69,7 @@ export function defaultBranchOf(input: string): string | null {
 export function defaultDeps(): RunDeps {
   return {
     fetchLive: realFetchLive,
+    fetchRecent: () => realFetchRecent(2026),
     fetchUpcoming: realFetchUpcoming,
     cache: makeCache(),
     branchOf: defaultBranchOf,
