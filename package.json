@@ -13,7 +13,7 @@
     "node": ">=18.18"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc && chmod +x dist/index.js",
     "dev": "tsx src/index.tsx",
     "test": "vitest run",
     "prepublishOnly": "npm run build"

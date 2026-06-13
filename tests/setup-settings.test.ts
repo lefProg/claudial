@@ -7,7 +7,7 @@ import { statusLineBlock, mergeSettings, installStatusline } from '../src/setup/
 describe('statusLineBlock', () => {
   it('builds the command block with refreshInterval 3', () => {
     expect(statusLineBlock('claudial --statusline')).toEqual({
-      type: 'command', command: 'claudial --statusline', refreshInterval: 3,
+      type: 'command', command: 'claudial --statusline', refreshInterval: 1,
     });
   });
 });

@@ -31,6 +31,41 @@ function deps(over = {}) {
 }
 
 describe('runStatusline', () => {
+  it('does NOT animate the idle next-kickoff line', async () => {
+    const up: Match = {
+      id: 7, group: null,
+      home: { name: 'Qatar', code: 'QAT' }, away: { name: 'Switzerland', code: 'SUI' },
+      homeScore: null, awayScore: null, status: 'upcoming', statusText: '',
+      minute: null, startTimestamp: 2_000_000_000, varInProgress: false,
+    };
+    const out = await runStatusline('{}', deps({
+      fetchLive: async () => [] as Match[],
+      fetchRecent: async () => [] as Match[],
+      fetchUpcoming: async () => [up],
+      branchOf: () => null,
+    }), 0);
+    expect(out).toContain('○');
+    expect(out).not.toContain('🥅');
+  });
+
+  it('animates the goal-kick during a goal celebration', async () => {
+    const c = makeCache(dir);
+    c.armGoal({
+      id: 1, group: null,
+      home: { name: 'Argentina', code: 'ARG' }, away: { name: 'England', code: 'ENG' },
+      homeScore: 1, awayScore: 2, status: 'live', statusText: '', minute: 78,
+      startTimestamp: 0, varInProgress: false,
+    }, 0);
+    const out = await runStatusline('{}', deps({
+      cache: c,
+      fetchLive: async () => [] as Match[],
+      fetchRecent: async () => [] as Match[],
+      fetchUpcoming: async () => [] as Match[],
+      branchOf: () => null,
+    }), 0);
+    expect(out).toContain('G O O O L');
+    expect(out).toContain('🥅'); // frame 0 carries the net
+  });
   it('fetches, caches and appends the branch', async () => {
     const out = await runStatusline('{}', deps(), 1000);
     expect(out).toBe("⚽ QAT 🇶🇦 0—1 🇨🇭 SUI 67' · main");

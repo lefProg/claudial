@@ -50,17 +50,47 @@ export function pastRange(daysBack: number, now: number = Date.now()): string {
   return `${yyyymmdd(start)}-${yyyymmdd(end)}`;
 }
 
+// ── Mock mode for demos (CLAUDIAL_MOCK) ──────────────────────────────────────
+// A fake live Argentina–England match. The first live fetch is 1–1; from the
+// second fetch on, Harry Kane has scored to make it 1–2 — so the next poll (or
+// pressing `r`) fires the goal takeover with his name. Inert unless the env var
+// is set. Run: `CLAUDIAL_MOCK=1 claudial`, then press `r`.
+const MOCK = !!process.env.CLAUDIAL_MOCK;
+let mockLiveCalls = 0;
+
+function mockEvent(): any {
+  const scored = mockLiveCalls >= 2; // Kane's goal lands on the 2nd live fetch
+  return {
+    id: '9001',
+    date: new Date(Date.now() - 78 * 60_000).toISOString(),
+    status: { type: { state: 'in', name: 'STATUS_SECOND_HALF', shortDetail: scored ? "78'" : "76'" }, displayClock: scored ? "78'" : "76'" },
+    competitions: [{
+      competitors: [
+        { homeAway: 'home', team: { id: '202', abbreviation: 'ARG', displayName: 'Argentina' }, score: '1' },
+        { homeAway: 'away', team: { id: '448', abbreviation: 'ENG', displayName: 'England' }, score: scored ? '2' : '1' },
+      ],
+      details: [
+        { type: { id: '137' }, clock: { value: 600, displayValue: "10'" }, scoringPlay: true, team: { id: '202' }, athletesInvolved: [{ id: '1', displayName: 'Lionel Messi', shortName: 'L. Messi' }] },
+        { type: { id: '137' }, clock: { value: 2400, displayValue: "40'" }, scoringPlay: true, team: { id: '448' }, athletesInvolved: [{ id: '2', displayName: 'Jude Bellingham', shortName: 'J. Bellingham' }] },
+        ...(scored ? [{ type: { id: '137' }, clock: { value: 4680, displayValue: "78'" }, scoringPlay: true, team: { id: '448' }, athletesInvolved: [{ id: '3', displayName: 'Harry Kane', shortName: 'H. Kane' }] }] : []),
+      ],
+    }],
+  };
+}
+
 // Kept for call-site compatibility; ESPN needs no season id to query.
 export async function resolveSeasonId(): Promise<number> {
   return 2026;
 }
 
 export async function fetchLive(): Promise<Match[]> {
+  if (MOCK) { mockLiveCalls++; return [parseEvent(mockEvent())]; }
   const events = await scoreboard(todayRange(0));
   return events.map(parseEvent).filter((m) => m.status === 'live' || m.status === 'halftime');
 }
 
 export async function fetchUpcoming(_seasonId: number): Promise<Match[]> {
+  if (MOCK) return [];
   const events = await scoreboard(todayRange(10));
   return events
     .map(parseEvent)
@@ -69,6 +99,7 @@ export async function fetchUpcoming(_seasonId: number): Promise<Match[]> {
 }
 
 export async function fetchRecent(_seasonId: number): Promise<Match[]> {
+  if (MOCK) return [];
   const events = await scoreboard(pastRange(1));
   return events
     .map(parseEvent)
@@ -77,6 +108,7 @@ export async function fetchRecent(_seasonId: number): Promise<Match[]> {
 }
 
 export async function fetchIncidents(eventId: number): Promise<MatchIncident[]> {
+  if (MOCK) return parseIncidents(mockEvent());
   const events = await scoreboard(todayRange(0));
   const event = events.find((e: any) => Number(e.id) === eventId);
   return event ? parseIncidents(event) : [];

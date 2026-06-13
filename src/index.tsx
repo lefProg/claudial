@@ -29,6 +29,30 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
+  if (args.includes('--mock-goal')) {
+    // Demo trigger for recording: show ARG 1—1 ENG live in the status bar for
+    // ~2s, then Harry Kane scores → 1—2 and a GOOOL celebration for 15s. Writes
+    // to the shared statusline cache, so the bar (which Claude Code repaints on
+    // its timer) plays the sequence. Run e.g. `!claudial --mock-goal` while
+    // recording.
+    const { makeCache } = await import('./statusline/cache.js');
+    const { liveLine } = await import('./statusline/line.js');
+    const cache = makeCache();
+    const base = {
+      id: 9001, group: null,
+      home: { name: 'Argentina', code: 'ARG' }, away: { name: 'England', code: 'ENG' },
+      status: 'live' as const, statusText: '', minute: 78, startTimestamp: 0, varInProgress: false,
+    };
+    cache.write(liveLine({ ...base, homeScore: 1, awayScore: 1 }));
+    process.stdout.write('⚽ mock: ARG 1—1 ENG live… (Kane scores in 2s)\n');
+    await new Promise((r) => setTimeout(r, 2000));
+    const scored = { ...base, homeScore: 1, awayScore: 2 };
+    cache.write(liveLine(scored));
+    cache.armGoal(scored);
+    process.stdout.write('⚽ GOOOL! ARG 1—2 ENG — the status bar celebrates for 15s.\n');
+    process.exit(0);
+  }
+
   if (args.includes('--statusline')) {
     const input = await readStdin();
     const { runStatusline, defaultDeps } = await import('./statusline/run.js');

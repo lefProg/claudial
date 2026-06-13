@@ -10,7 +10,7 @@ export interface StatusLineBlock {
 export type Conflict = 'overwrite' | 'keep' | 'abort';
 
 export function statusLineBlock(command: string): StatusLineBlock {
-  return { type: 'command', command, refreshInterval: 3 };
+  return { type: 'command', command, refreshInterval: 1 };
 }
 
 /** Pure merge. Returns the new settings object and whether it changed. */

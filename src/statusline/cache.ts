@@ -25,6 +25,7 @@ export interface StatuslineCache {
   tryLock(now?: number): boolean;
   unlock(): void;
   updateGoalState(live: Match[], now?: number): void;
+  armGoal(match: Match, now?: number): void;
   activeGoalLine(now?: number): string | null;
 }
 
@@ -89,6 +90,11 @@ export function makeCache(dir: string = join(tmpdir(), 'claudial-statusline')): 
         }
       }
       atomicWrite(stateFile, JSON.stringify(cur));
+    },
+    armGoal(match, now = Date.now()) {
+      // Directly fire a celebration (used by `claudial --mock-goal` for demos).
+      atomicWrite(goalFile, goalText(match));
+      atomicWrite(goalTsFile, String(now));
     },
     activeGoalLine(now = Date.now()) {
       if (!existsSync(goalTsFile) || !existsSync(goalFile)) return null;

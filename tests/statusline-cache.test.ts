@@ -68,6 +68,14 @@ describe('goal window', () => {
     expect(fired.startsWith('\x1b[1;38;2;217;119;87m')).toBe(true);
     expect(fired.endsWith('\x1b[0m')).toBe(true);
   });
+  it('armGoal fires a celebration directly within the window', () => {
+    const c = makeCache(dir);
+    c.armGoal(live({ home: { name: 'Argentina', code: 'ARG' }, away: { name: 'England', code: 'ENG' }, homeScore: 1, awayScore: 2 }), 1000);
+    const fired = c.activeGoalLine(1000);
+    expect(fired).toContain('G O O O L');
+    expect(fired).toContain('ARG');
+    expect(c.activeGoalLine(1000 + GOAL_WINDOW_MS + 1)).toBeNull();
+  });
 });
 
 describe('constants', () => {

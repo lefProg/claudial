@@ -2,12 +2,12 @@
 
 # ⚽ claudial
 
-### Live World Cup 2026 in your terminal — goal, red-card and VAR takeovers included
+### Live World Cup 2026 in your terminal — goal and red-card takeovers included
 
 One line. Zero install. Every score, while you work.
 
 ```
-npx claudial
+npx claudial && claudial setup
 ```
 
 <br/>
@@ -24,45 +24,14 @@ npx claudial
 
 ---
 
-Live matches with scores, minutes and scorers on top. Upcoming fixtures in
-your local time below. Auto-refreshing while you work.
+Live World Cup scores right inside Claude Code's status bar — under the input
+box, always visible while you work, lighting up the moment anyone scores:
 
-```
- ▐▛███▜▌   WORLD CUP 2026 · LIVE
- ▝▜█████▛▘  ───────────────────────
+<div align="center">
 
- ⏺ LIVE 67'
-   ARG 🇦🇷  2 — 1  🇲🇽 MEX
-   ⚽ 23' Messi · 51' Álvarez | 44' Lozano
+![claudial — live World Cup 2026 scores in Claude Code's status bar](demo.gif)
 
- ⏺ LIVE 12'
-   FRA 🇫🇷  0 — 0  🇸🇳 SEN
-
- ○ UPCOMING
-   18:00  BRA 🇧🇷 — 🇭🇷 CRO
-   21:00  ESP 🇪🇸 — 🇲🇦 MAR
-
- r refresh · q quit
-```
-
-And when a goal goes in — anywhere in the tournament — the whole screen
-takes over:
-
-```
-
-
-      █▀▀█  █▀▀█  █▀▀█  █
-      █ ▄▄  █  █  █▀▀█  █
-      ▀▀▀▀  ▀▀▀▀  ▀  ▀  ▀▀▀▀
-
-         LIONEL MESSI · 23'
-
-      ARG 🇦🇷  2 — 1  🇲🇽 MEX
-
-
-```
-
-Four seconds of glory, then back to the board.
+</div>
 
 ## Claude Code, World Cup edition
 
@@ -87,11 +56,30 @@ It refreshes every few seconds and is pure Node, so it runs on macOS and
 Windows too, in any shell. Restart Claude Code after setup to see it.
 Scriptable, no prompts: `claudial setup --statusline --global --yes`.
 
-## Why a TUI
+## The full dashboard
 
-The World Cup happens during work hours somewhere. This sits in a terminal
-split, costs nothing to glance at, and celebrates louder than a push
-notification — without you ever opening a browser tab.
+Prefer the full board beside Claude? `claudial` opens a live dashboard — every
+match with scores, minutes and scorers, upcoming fixtures in your local time,
+all auto-refreshing while you work. And when a goal goes in — anywhere in the
+tournament — the whole screen takes over:
+
+```
+
+
+      █▀▀█  █▀▀█  █▀▀█  █
+      █ ▄▄  █  █  █▀▀█  █
+      ▀▀▀▀  ▀▀▀▀  ▀  ▀  ▀▀▀▀
+
+         LIONEL MESSI · 23'
+
+      ARG 🇦🇷  2 — 1  🇲🇽 MEX
+
+
+```
+
+Four seconds of glory, then back to the board. It costs nothing to glance at,
+and celebrates louder than a push notification — without you ever opening a
+browser tab.
 
 ## Usage
 
@@ -115,9 +103,9 @@ Requires Node ≥ 18. No account, no API key, no config.
 | `r` | refresh now |
 | `q` | quit        |
 
-Beyond goals, every live match carries its incident feed: yellow cards,
-substitutions, injury time — and a `⚖ VAR` badge the moment a review starts.
-Red cards and VAR decisions get the full-screen treatment, same as goals.
+Beyond goals, every live match carries its incident feed — yellow cards,
+substitutions, injury time — and red cards get the full-screen treatment, same
+as goals.
 
 ## Status
 
@@ -125,6 +113,10 @@ v1 is being built live during the group stage. Follow the commits.
 
 ## Notes
 
+- Seeing letter codes instead of country flags (`🇦🇷` showing as `AR`)? Your
+  terminal isn't rendering flag emoji. Install [Konsole](https://konsole.kde.org/)
+  — it shows them out of the box. (macOS terminals already do; Windows
+  Terminal does not.)
 - Match data comes from [ESPN's public soccer scoreboard](https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard)
   — facts only (scores, scorers, cards), no logos or branding. See
   [DATA.md](DATA.md) for why this source. Not affiliated with or endorsed by

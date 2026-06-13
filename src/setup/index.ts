@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import React from 'react';
 import { render } from 'ink';
 import { parseFlags, type SetupOptions } from './flags.js';
-import { detectShell, rcPathFor, isOnPath, hasTmux, isWindows, type Shell } from './detect.js';
+import { detectShell, rcPathFor, isOnPath, type Shell } from './detect.js';
 import { applySetup, type ApplyContext } from './apply.js';
 import { Wizard } from './Wizard.js';
 
@@ -13,9 +13,8 @@ function commandFor(): string {
 
 function contextFor(opts: SetupOptions): ApplyContext {
   const shell: Shell = opts.shell ?? detectShell();
-  const settingsPath = opts.scope === 'project'
-    ? join(process.cwd(), '.claude', 'settings.json')
-    : join(homedir(), '.claude', 'settings.json');
+  // Always global — setup installs the statusline into ~/.claude/settings.json.
+  const settingsPath = join(homedir(), '.claude', 'settings.json');
   return {
     settingsPath,
     rcPath: rcPathFor(shell, homedir()),
@@ -56,7 +55,6 @@ export async function runSetup(args: string[]): Promise<void> {
     const { waitUntilExit } = render(
       React.createElement(Wizard, {
         defaultShell: detectShell(),
-        allowTmux: !isWindows() && hasTmux(),
         onDone: (final: SetupOptions) => run(final),
       }),
     );

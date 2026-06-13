@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { fetchLive as realFetchLive, fetchRecent as realFetchRecent, fetchUpcoming as realFetchUpcoming } from '../api/espn.js';
 import { scoreLine } from './line.js';
 import { makeCache, TTL_MS, type StatuslineCache } from './cache.js';
+import { goalKickFrame } from './anim.js';
 import type { Match } from '../types.js';
 
 export interface RunDeps {
@@ -45,7 +46,10 @@ export async function runStatusline(input: string, deps: RunDeps, now: number = 
     }
   }
 
-  const score = cache.activeGoalLine(now) ?? line ?? PLACEHOLDER;
+  const goal = cache.activeGoalLine(now);
+  // The goal-kick animation plays ONLY during a goal celebration; idle and live
+  // lines are shown as-is.
+  const score = goal ? `${goalKickFrame(now)}  ${goal}` : (line ?? PLACEHOLDER);
   const branch = deps.branchOf(input);
   return branch ? `${score} · ${branch}` : score;
 }
