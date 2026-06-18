@@ -77,7 +77,8 @@ describe('format', () => {
     expect(lines[0]).toContain('PICK: SUI win (64%)');
     expect(lines[0]).toContain('stake €3');
     expect(lines[1]).toContain('SUI 64%');
-    expect(lines[1]).toContain('O2.5 58%');
+    expect(lines[1]).toContain('Over 2.5 58%');
+    expect(lines[1]).toContain('No Goal 53%');
     expect(lines[1]).toContain('score 2-1');
   });
 });

@@ -19,10 +19,11 @@ export function fullSlate(p: Prediction): string[] {
       : result.away >= result.draw
         ? `${p.away_code} ${pct(result.away)}`
         : `Draw ${pct(result.draw)}`;
-  const ouPick = ou.over >= ou.under ? `O2.5 ${pct(ou.over)}` : `U2.5 ${pct(ou.under)}`;
-  const bttsPick = btts.yes >= btts.no ? `BTTS ${pct(btts.yes)}` : `No BTTS ${pct(btts.no)}`;
+  const ouPick = ou.over >= ou.under ? `Over 2.5 ${pct(ou.over)}` : `Under 2.5 ${pct(ou.under)}`;
+  // Goal/Goal (GG) & No Goal (NG) — Stoiximan/Novibet wording for BTTS.
+  const ggPick = btts.yes >= btts.no ? `Goal/Goal ${pct(btts.yes)}` : `No Goal ${pct(btts.no)}`;
   return [
     `🔮 PICK: ${p.pick.label} (${pct(p.pick.confidence)})  ·  stake €${p.suggested_stake_eur}`,
-    `   1X2 ${fav}   ${ouPick}   ${bttsPick}   score ${scoreline}`,
+    `   1X2 ${fav}   ${ouPick}   ${ggPick}   score ${scoreline}`,
   ];
 }
