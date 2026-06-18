@@ -6,7 +6,7 @@ import type { Match } from '../src/types.js';
 import type { Prediction } from '../src/predictions/types.js';
 import { matchPrediction } from '../src/predictions/match.js';
 import { headline, fullSlate } from '../src/predictions/format.js';
-import { predictionsEnabled, fetchPredictions } from '../src/predictions/client.js';
+import { predictionsEnabled, predictionsUrl, fetchPredictions } from '../src/predictions/client.js';
 import { scoreLine } from '../src/statusline/line.js';
 
 function pred(over: Partial<Prediction> = {}): Prediction {
@@ -82,22 +82,32 @@ describe('format', () => {
   });
 });
 
-describe('predictionsEnabled', () => {
-  it('is off without the env var', () => {
-    expect(predictionsEnabled({})).toBe(false);
+describe('predictionsUrl', () => {
+  it('uses the env var when set', () => {
+    expect(predictionsUrl({ CLAUDIAL_PREDICTIONS_URL: 'http://custom/' })).toBe('http://custom/');
   });
-  it('is on with the env var', () => {
+  it('falls back to the shipped default URL', () => {
+    expect(predictionsUrl({})).toMatch(/^https?:\/\//);
+  });
+});
+
+describe('predictionsEnabled', () => {
+  it('is on by default (shipped URL)', () => {
+    expect(predictionsEnabled({})).toBe(true);
+  });
+  it('stays on with an env override', () => {
     expect(predictionsEnabled({ CLAUDIAL_PREDICTIONS_URL: 'http://x' })).toBe(true);
   });
 });
 
 describe('fetchPredictions', () => {
-  it('returns [] and makes no call when disabled', async () => {
-    let called = false;
-    const fetchImpl = (async () => { called = true; return new Response('[]'); }) as unknown as typeof fetch;
-    const out = await fetchPredictions({ env: {}, fetchImpl });
-    expect(out).toEqual([]);
-    expect(called).toBe(false);
+  it('fetches the shipped default URL when no env var is set', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'claudial-pred-'));
+    let calledUrl = '';
+    const fetchImpl = (async (u: string) => { calledUrl = u; return new Response(JSON.stringify([pred()])); }) as unknown as typeof fetch;
+    const out = await fetchPredictions({ env: {}, fetchImpl, dir });
+    expect(out[0]?.pick.label).toBe('SUI win');
+    expect(calledUrl).toMatch(/^https?:\/\//);
   });
 
   it('fetches, returns and caches when enabled', async () => {

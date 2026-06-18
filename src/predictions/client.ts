@@ -4,12 +4,21 @@ import { join } from 'node:path';
 import type { Prediction } from './types.js';
 
 const ENV = 'CLAUDIAL_PREDICTIONS_URL';
+// Shipped default so predictions work out of the box from the published package.
+// Override with CLAUDIAL_PREDICTIONS_URL (e.g. your own backend, or to disable
+// by pointing it elsewhere).
+const DEFAULT_PREDICTIONS_URL = 'http://161.97.67.12:8000/api/predictions/';
 // Predictions only change every few hours server-side, so poll gently.
 const CACHE_TTL_MS = 30 * 60 * 1000;
 
-/** Predictions are entirely opt-in: off unless the user points us at an API. */
+/** Resolve the API URL: explicit env var wins, else the shipped default. */
+export function predictionsUrl(env: NodeJS.ProcessEnv = process.env): string {
+  return env[ENV] || DEFAULT_PREDICTIONS_URL;
+}
+
+/** A URL is always resolvable now (shipped default), so predictions are on. */
 export function predictionsEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return !!env[ENV];
+  return !!predictionsUrl(env);
 }
 
 function cachePath(dir: string): string {
@@ -59,7 +68,7 @@ export async function fetchPredictions(opts: FetchOpts = {}): Promise<Prediction
     fetchImpl = fetch,
   } = opts;
 
-  const url = env[ENV];
+  const url = predictionsUrl(env);
   if (!url) return [];
 
   mkdirSync(dir, { recursive: true });
