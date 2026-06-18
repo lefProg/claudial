@@ -4,6 +4,7 @@ import { initialState, reducer } from '../state.js';
 import { startPoller, type Poller, type PollerDeps } from '../engine/poller.js';
 import type { Match } from '../types.js';
 import { fetchIncidents, fetchLive, fetchRecent, fetchUpcoming } from '../api/espn.js';
+import { fetchPredictions } from '../predictions/client.js';
 import { Header } from './Header.js';
 import { DaySection } from './DaySection.js';
 import { partitionByDay } from './fixtures.js';
@@ -34,6 +35,7 @@ export function App({ seasonId, mode = 'board' }: { seasonId: number; mode?: Mod
         recent: await fetchRecent(seasonId),
       }),
       fetchIncidents,
+      fetchPredictions: () => fetchPredictions(),
       dispatch,
     };
     pollerRef.current = startPoller(deps);
@@ -69,7 +71,7 @@ export function App({ seasonId, mode = 'board' }: { seasonId: number; mode?: Mod
       <Header stale={state.stale} lastUpdated={state.lastUpdated} />
       <DaySection label="TODAY" matches={today} incidents={state.incidents} compact={compact} />
       <DaySection label="YESTERDAY" matches={yesterday} incidents={state.incidents} compact={compact} />
-      <UpcomingSection matches={future} compact={compact} />
+      <UpcomingSection matches={future} compact={compact} predictions={state.predictions} />
       <Footer />
     </Box>
   );

@@ -28,6 +28,7 @@ function makeDeps(liveSnapshots: Match[][], incidentSnapshots: MatchIncident[][]
     deps: {
       fetchLive: vi.fn(async () => liveSnapshots[Math.min(liveCall++, liveSnapshots.length - 1)]),
       fetchFixtures: vi.fn(async () => ({ upcoming: [], recent: [] })),
+      fetchPredictions: vi.fn(async () => []),
       fetchIncidents: vi.fn(async () => incidentSnapshots[Math.min(incCall++, incidentSnapshots.length - 1)]),
       dispatch: (a: Action) => actions.push(a),
     },
@@ -95,6 +96,7 @@ describe('startPoller', () => {
     const deps: PollerDeps = {
       fetchLive: vi.fn(async () => { throw new Error('403'); }),
       fetchFixtures: vi.fn(async () => ({ upcoming: [], recent: [] })),
+      fetchPredictions: vi.fn(async () => []),
       fetchIncidents: vi.fn(async () => []),
       dispatch: vi.fn(),
     };
@@ -123,6 +125,7 @@ describe('startPoller', () => {
     const deps: PollerDeps = {
       fetchLive: vi.fn(async () => [base, m2]),
       fetchFixtures: vi.fn(async () => ({ upcoming: [], recent: [] })),
+      fetchPredictions: vi.fn(async () => []),
       fetchIncidents: vi.fn(async (id: number) => {
         if (id === 1) throw new Error('boom');
         return [];
@@ -141,6 +144,7 @@ describe('startPoller', () => {
     const deps: PollerDeps = {
       fetchLive: vi.fn(async () => (call++ === 0 ? [base] : [{ ...base, homeScore: 1 }])),
       fetchFixtures: vi.fn(async () => ({ upcoming: [], recent: [] })),
+      fetchPredictions: vi.fn(async () => []),
       fetchIncidents: vi.fn(async () => { throw new Error('boom'); }),
       dispatch: (a: Action) => actions.push(a),
     };
@@ -161,6 +165,7 @@ describe('startPoller', () => {
     const deps: PollerDeps = {
       fetchLive: vi.fn(async () => [base]),
       fetchFixtures: vi.fn(async () => ({ upcoming: [], recent: [] })),
+      fetchPredictions: vi.fn(async () => []),
       fetchIncidents: vi.fn(async () => {
         call += 1;
         if (call === 1) throw new Error('boom');          // tick 1: fails
@@ -189,6 +194,7 @@ describe('startPoller', () => {
         return Promise.resolve([]);
       }),
       fetchFixtures: vi.fn(async () => ({ upcoming: [], recent: [] })),
+      fetchPredictions: vi.fn(async () => []),
       fetchIncidents: vi.fn(async () => []),
       dispatch: vi.fn(),
     };

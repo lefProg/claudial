@@ -1,6 +1,9 @@
 import type { Match } from '../types.js';
 import { formatKickoff } from '../ui/UpcomingSection.js';
 import { homeTag, awayTag } from '../ui/flags.js';
+import type { Prediction } from '../predictions/types.js';
+import { matchPrediction } from '../predictions/match.js';
+import { headline } from '../predictions/format.js';
 
 // Assumed wall-clock length of a match (kickoff → ~full time). ESPN exposes no
 // end-time, so a finished match is anchored at kickoff + this for proximity math.
@@ -20,17 +23,31 @@ export function finishedLine(match: Match): string {
   return `⚽ ${homeTag(match.home.code)} ${match.homeScore ?? 0}—${match.awayScore ?? 0} ${awayTag(match.away.code)} FT`;
 }
 
-/** The next kickoff: "○ BRA 🇧🇷 — 🇲🇦 MAR Sun 01:00". */
-function upcomingLine(match: Match, now: number): string {
-  return `○ ${homeTag(match.home.code)} — ${awayTag(match.away.code)} ${formatKickoff(match.startTimestamp, now)}`;
+/**
+ * The next kickoff: "○ BRA 🇧🇷 — 🇲🇦 MAR Sun 01:00", with a prediction headline
+ * appended when one is available: "… · 🔮 BRA win 64% · 2-1".
+ */
+function upcomingLine(match: Match, now: number, preds: Prediction[]): string {
+  const base = `○ ${homeTag(match.home.code)} — ${awayTag(match.away.code)} ${formatKickoff(match.startTimestamp, now)}`;
+  const pred = matchPrediction(match, preds);
+  return pred ? `${base} · ${headline(pred)}` : base;
 }
 
 /**
  * Live matches joined by two spaces. Otherwise show whichever moment is closer
  * to `now`: the latest finished result (end ≈ kickoff + MATCH_MS) or the next
- * kickoff. Only one present → that one; neither → "".
+ * kickoff. Only one present → that one; neither → "". When the chosen line is
+ * the next kickoff, a matching prediction headline is appended (`preds` is
+ * empty unless the predictions engine is enabled, so default behavior is
+ * unchanged).
  */
-export function scoreLine(live: Match[], recent: Match[], upcoming: Match[], now: number = Date.now()): string {
+export function scoreLine(
+  live: Match[],
+  recent: Match[],
+  upcoming: Match[],
+  now: number = Date.now(),
+  preds: Prediction[] = [],
+): string {
   if (live.length > 0) return live.map(liveLine).join('  ');
 
   const lastFinished = recent.length
@@ -43,9 +60,9 @@ export function scoreLine(live: Match[], recent: Match[], upcoming: Match[], now
     const startMs = next.startTimestamp * 1000;
     return Math.abs(now - finishMs) <= Math.abs(startMs - now)
       ? finishedLine(lastFinished)
-      : upcomingLine(next, now);
+      : upcomingLine(next, now, preds);
   }
   if (lastFinished) return finishedLine(lastFinished);
-  if (next) return upcomingLine(next, now);
+  if (next) return upcomingLine(next, now, preds);
   return '';
 }

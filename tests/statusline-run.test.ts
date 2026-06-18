@@ -24,6 +24,7 @@ function deps(over = {}) {
     fetchRecent: async () => [] as Match[],
     fetchUpcoming: async () => [] as Match[],
     fetchRedCards: async () => [],
+    fetchPredictions: async () => [],
     cache: makeCache(dir),
     branchOf: () => 'main',
     timeoutMs: 3000,

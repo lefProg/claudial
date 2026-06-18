@@ -1,11 +1,13 @@
 import { diffGoals, diffIncidents } from './diff.js';
 import type { Match, MatchIncident, Takeover } from '../types.js';
+import type { Prediction } from '../predictions/types.js';
 import type { Action } from '../state.js';
 
 export interface PollerDeps {
   fetchLive(): Promise<Match[]>;
   fetchFixtures(): Promise<{ upcoming: Match[]; recent: Match[] }>;
   fetchIncidents(eventId: number): Promise<MatchIncident[]>;
+  fetchPredictions(): Promise<Prediction[]>;
   dispatch(a: Action): void;
 }
 
@@ -129,6 +131,11 @@ export function startPoller(deps: PollerDeps, opts: PollerOpts = {}): Poller {
     } catch {
       deps.dispatch({ type: 'stale' });
     }
+    // Predictions ride the gentle fixtures cadence. fetchPredictions is
+    // fail-silent (returns [] when disabled or on error), so this never
+    // disturbs the board.
+    const predictions = await deps.fetchPredictions();
+    if (predictions.length > 0) deps.dispatch({ type: 'predictions', predictions });
     if (!stopped) fixturesTimer = setTimeout(fixturesTick, fixturesMs);
   }
 

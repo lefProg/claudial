@@ -4,12 +4,15 @@ import { scoreLine } from './line.js';
 import { makeCache, TTL_MS, type StatuslineCache } from './cache.js';
 import { goalKickFrame } from './anim.js';
 import type { Match } from '../types.js';
+import type { Prediction } from '../predictions/types.js';
+import { fetchPredictions as realFetchPredictions } from '../predictions/client.js';
 
 export interface RunDeps {
   fetchLive: () => Promise<Match[]>;
   fetchRecent: () => Promise<Match[]>;
   fetchUpcoming: (seasonId: number) => Promise<Match[]>;
   fetchRedCards: () => Promise<RedCardEvent[]>;
+  fetchPredictions: () => Promise<Prediction[]>;
   cache: StatuslineCache;
   branchOf: (input: string) => string | null;
   timeoutMs: number;
@@ -33,11 +36,11 @@ export async function runStatusline(input: string, deps: RunDeps, now: number = 
   const fresh = cached != null && cached.ageMs <= TTL_MS;
   if (!fresh && cache.tryLock(now)) {
     try {
-      const [liveM, recentM, upcomingM, redsM] = await withTimeout(
-        Promise.all([deps.fetchLive(), deps.fetchRecent(), deps.fetchUpcoming(2026), deps.fetchRedCards()]),
+      const [liveM, recentM, upcomingM, redsM, predsM] = await withTimeout(
+        Promise.all([deps.fetchLive(), deps.fetchRecent(), deps.fetchUpcoming(2026), deps.fetchRedCards(), deps.fetchPredictions()]),
         deps.timeoutMs,
       );
-      const next = scoreLine(liveM, recentM, upcomingM, now);
+      const next = scoreLine(liveM, recentM, upcomingM, now, predsM);
       cache.updateGoalState(liveM, now);
       cache.updateRedCards(redsM, now);
       if (next) { cache.write(next, now); line = next; }
@@ -78,6 +81,7 @@ export function defaultDeps(): RunDeps {
     fetchRecent: () => realFetchRecent(2026),
     fetchUpcoming: realFetchUpcoming,
     fetchRedCards: realFetchLiveRedCards,
+    fetchPredictions: () => realFetchPredictions(),
     cache: makeCache(),
     branchOf: defaultBranchOf,
     timeoutMs: 3000,
