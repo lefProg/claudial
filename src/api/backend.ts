@@ -160,32 +160,13 @@ export const putSettings = (s: Settings) => api<Settings>('PUT', '/v1/me/setting
 export const forgetDevice = () => api<void>('DELETE', '/v1/me/settings');
 
 /**
- * First run: a brand-new device follows nothing, which would show an empty
- * board. Follow every league once, then never again (the user may unfollow
- * everything on purpose). Fail-silent: retried on the next start.
+ * A new device follows nothing until the user picks something. True when this
+ * device follows no league and no team, so the UI can say how to start.
  */
-/** Record that this device chose its own subscriptions, so onboarding never overrides them. */
-export async function markOnboarded(dir: string = configDir()): Promise<void> {
-  const { writeFileSync, mkdirSync } = await import('node:fs');
-  const { join } = await import('node:path');
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, 'onboarded'), `${new Date().toISOString()}\n`);
-}
-
-export async function ensureOnboarded(dir: string = configDir()): Promise<void> {
-  const { existsSync, writeFileSync, mkdirSync } = await import('node:fs');
-  const { join } = await import('node:path');
-  const marker = join(dir, 'onboarded');
-  if (MOCK || existsSync(marker)) return;
-  try {
-    const current = await getSettings();
-    if (current.leagues.length === 0 && current.teams.length === 0) {
-      const leagues = await listLeagues();
-      await putSettings({ leagues: leagues.map((l) => l.slug), teams: [] });
-    }
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(marker, `${new Date().toISOString()}\n`);
-  } catch { /* offline or server down: try again next start */ }
+export async function followsNothing(): Promise<boolean> {
+  if (MOCK) return false;
+  const s = await getSettings();
+  return s.leagues.length === 0 && s.teams.length === 0;
 }
 
 // ── Push: the server's event stream ─────────────────────────────────────────

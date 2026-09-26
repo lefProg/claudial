@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { fetchLive as realFetchLive, fetchRecent as realFetchRecent, fetchUpcoming as realFetchUpcoming, fetchLiveRedCards as realFetchLiveRedCards, type RedCardEvent } from '../api/backend.js';
 import { scoreLine } from './line.js';
-import { ensureOnboarded } from '../api/backend.js';
+import { followsNothing } from '../api/backend.js';
 import { makeCache, TTL_MS, type StatuslineCache } from './cache.js';
 import { goalKickFrame } from './anim.js';
 import type { Match } from '../types.js';
@@ -16,12 +16,14 @@ export interface RunDeps {
   fetchPredictions: () => Promise<Prediction[]>;
   cache: StatuslineCache;
   branchOf: (input: string) => string | null;
-  /** First-run league subscription; injected so tests never touch the network or ~/.config. */
-  onboard: () => Promise<void>;
+  /** Whether this device follows nothing yet; injected so tests never touch the network. */
+  followsNothing: () => Promise<boolean>;
   timeoutMs: number;
 }
 
 const PLACEHOLDER = '⚽ claudial · warming up';
+/** Shown until the user follows something: a new device starts with nothing. */
+export const FOLLOW_HINT = '⚽ claudial · run `claudial follow` to pick your teams';
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   let id: ReturnType<typeof setTimeout>;
@@ -39,15 +41,17 @@ export async function runStatusline(input: string, deps: RunDeps, now: number = 
   const fresh = cached != null && cached.ageMs <= TTL_MS;
   if (!fresh && cache.tryLock(now)) {
     try {
-      await withTimeout(deps.onboard(), deps.timeoutMs);
       const [liveM, recentM, upcomingM, redsM, predsM] = await withTimeout(
         Promise.all([deps.fetchLive(), deps.fetchRecent(), deps.fetchUpcoming(2026), deps.fetchRedCards(), deps.fetchPredictions()]),
         deps.timeoutMs,
       );
-      const next = scoreLine(liveM, recentM, upcomingM, now, predsM);
+      let next = scoreLine(liveM, recentM, upcomingM, now, predsM);
+      // Nothing to show: say how to start if the device follows nothing.
+      if (!next && await withTimeout(deps.followsNothing(), deps.timeoutMs)) next = FOLLOW_HINT;
       cache.updateGoalState(liveM, now);
       cache.updateRedCards(redsM, now);
       if (next) { cache.write(next, now); line = next; }
+      else if (line === FOLLOW_HINT) line = null; // followed something since
     } catch {
       // keep last good cache (line already set)
     } finally {
@@ -88,7 +92,7 @@ export function defaultDeps(): RunDeps {
     fetchPredictions: () => realFetchPredictions(),
     cache: makeCache(),
     branchOf: defaultBranchOf,
-    onboard: ensureOnboarded,
+    followsNothing,
     timeoutMs: 3000,
   };
 }

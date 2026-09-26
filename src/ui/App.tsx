@@ -1,11 +1,11 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
-import { Box, useApp, useInput } from 'ink';
+import { Box, Text, useApp, useInput } from 'ink';
 import { initialState, reducer } from '../state.js';
 import { startPoller, type Poller, type PollerDeps } from '../engine/poller.js';
 import type { Match } from '../types.js';
-import { fetchIncidents, fetchLive, fetchRecent, fetchUpcoming, invalidateState, subscribeEvents } from '../api/backend.js';
+import { fetchIncidents, fetchLive, fetchRecent, fetchUpcoming, followsNothing, invalidateState, subscribeEvents } from '../api/backend.js';
 import { fetchPredictions } from '../predictions/client.js';
-import { Header } from './Header.js';
+import { ACCENT, Header } from './Header.js';
 import { DaySection } from './DaySection.js';
 import { partitionByDay } from './fixtures.js';
 import { UpcomingSection } from './UpcomingSection.js';
@@ -31,6 +31,12 @@ export function App({ seasonId, mode = 'board' }: { seasonId: number; mode?: Mod
   // Bumped after the picker saves: the event stream reads settings at connect
   // time, so it has to reconnect to see the new subscriptions.
   const [streamGen, setStreamGen] = useState(0);
+  // A new device follows nothing: the board says how to start instead of staying blank.
+  const [followsNone, setFollowsNone] = useState(false);
+
+  useEffect(() => {
+    followsNothing().then(setFollowsNone, () => {});
+  }, [streamGen]);
 
   useEffect(() => {
     const deps: PollerDeps = {
@@ -98,6 +104,11 @@ export function App({ seasonId, mode = 'board' }: { seasonId: number; mode?: Mod
   return (
     <Box flexDirection="column" paddingX={1} paddingY={1}>
       <Header stale={state.stale} lastUpdated={state.lastUpdated} />
+      {followsNone ? (
+        <Box marginBottom={1}>
+          <Text>You don't follow anything yet. Press <Text bold color={ACCENT}>f</Text> to pick your leagues and teams.</Text>
+        </Box>
+      ) : null}
       <DaySection label="TODAY" matches={today} incidents={state.incidents} compact={compact} />
       <DaySection label="YESTERDAY" matches={yesterday} incidents={state.incidents} compact={compact} />
       <UpcomingSection matches={future} compact={compact} predictions={state.predictions} />

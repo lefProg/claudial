@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   toMatch, toIncidents, fetchState, invalidateState, fetchLive, fetchRecent, fetchUpcoming,
-  fetchLiveRedCards, api, ApiError, subscribeEvents, ensureOnboarded, type ServerMatch,
+  fetchLiveRedCards, api, ApiError, subscribeEvents, followsNothing, type ServerMatch,
 } from '../src/api/backend.js';
 import { deviceId } from '../src/api/device.js';
 
@@ -92,31 +92,20 @@ describe('api', () => {
   });
 });
 
-describe('ensureOnboarded', () => {
-  it('follows every league once for a brand-new device, then never again', async () => {
+describe('followsNothing', () => {
+  it('is true for a new device and never follows anything by itself', async () => {
     const seen: string[] = [];
-    let put: unknown = null;
     vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
-      seen.push(`${init.method} ${new URL(url).pathname}`);
-      if (url.endsWith('/v1/me/settings') && init.method === 'GET') return jsonResponse({ leagues: [], teams: [] });
-      if (url.endsWith('/v1/leagues')) return jsonResponse([{ slug: 'eng.1', name: 'Premier League' }, { slug: 'gre.1', name: 'Super League Greece' }]);
-      put = JSON.parse(init.body as string);
-      return jsonResponse(put);
+      seen.push(`${init.method ?? 'GET'} ${new URL(url).pathname}`);
+      return jsonResponse({ leagues: [], teams: [] });
     });
-    const dir = join(process.env.XDG_CONFIG_HOME!, 'claudial');
-    await ensureOnboarded(dir);
-    expect(put).toEqual({ leagues: ['eng.1', 'gre.1'], teams: [] });
-    expect(existsSync(join(dir, 'onboarded'))).toBe(true);
-    const before = seen.length;
-    await ensureOnboarded(dir);
-    expect(seen.length).toBe(before);
+    expect(await followsNothing()).toBe(true);
+    expect(seen).toEqual(['GET /v1/me/settings']);
   });
 
-  it('stays silent and retries later when the server is down', async () => {
-    vi.stubGlobal('fetch', async () => { throw new Error('ECONNREFUSED'); });
-    const dir = join(process.env.XDG_CONFIG_HOME!, 'claudial');
-    await expect(ensureOnboarded(dir)).resolves.toBeUndefined();
-    expect(existsSync(join(dir, 'onboarded'))).toBe(false);
+  it('is false once a league or a team is followed', async () => {
+    vi.stubGlobal('fetch', async () => jsonResponse({ leagues: [], teams: ['443'] }));
+    expect(await followsNothing()).toBe(false);
   });
 });
 

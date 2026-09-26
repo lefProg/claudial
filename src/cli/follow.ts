@@ -86,7 +86,7 @@ export async function runFollow(args: string[], out: Out = console.log): Promise
       }
       case 'forget': {
         await forgetDevice();
-        // A new identity next time; onboarding runs again then.
+        // A new identity next time. `onboarded` was written by versions that auto-followed.
         const dir = configDir();
         rmSync(join(dir, 'device-id'), { force: true });
         rmSync(join(dir, 'onboarded'), { force: true });

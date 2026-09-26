@@ -2,7 +2,7 @@
 import { render } from 'ink';
 import { App } from './ui/App.js';
 import { FOLLOW_COMMANDS } from './cli/follow.js';
-import { ensureOnboarded, resolveSeasonId } from './api/backend.js';
+import { resolveSeasonId } from './api/backend.js';
 
 // exit quietly when the consumer of a pipe closes early (e.g. `claudial | head`)
 process.stdout.on('error', (err: NodeJS.ErrnoException) => {
@@ -83,9 +83,6 @@ async function main(): Promise<void> {
     process.stdout.write(out);
     process.exit(0);
   }
-
-  // First run: a brand-new device follows every league (fail-silent, retried next start).
-  await ensureOnboarded();
 
   let seasonId: number;
   try {

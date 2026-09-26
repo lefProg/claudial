@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runStatusline } from '../src/statusline/run.js';
+import { runStatusline, FOLLOW_HINT } from '../src/statusline/run.js';
 import { makeCache } from '../src/statusline/cache.js';
 import type { Match } from '../src/types.js';
 
@@ -27,13 +27,30 @@ function deps(over = {}) {
     fetchPredictions: async () => [],
     cache: makeCache(dir),
     branchOf: () => 'main',
-    onboard: async () => {},
+    followsNothing: async () => false,
     timeoutMs: 3000,
     ...over,
   };
 }
 
 describe('runStatusline', () => {
+  it('tells a device that follows nothing how to start', async () => {
+    const out = await runStatusline('{}', deps({
+      fetchLive: async () => [] as Match[],
+      followsNothing: async () => true,
+      branchOf: () => null,
+    }), 0);
+    expect(out).toBe(FOLLOW_HINT);
+  });
+
+  it('drops the hint once the device follows something', async () => {
+    const c = makeCache(dir);
+    const empty = { fetchLive: async () => [] as Match[], branchOf: () => null, cache: c };
+    expect(await runStatusline('{}', deps({ ...empty, followsNothing: async () => true }), 0)).toBe(FOLLOW_HINT);
+    const out = await runStatusline('{}', deps({ ...empty, followsNothing: async () => false }), 60_000);
+    expect(out).not.toBe(FOLLOW_HINT);
+  });
+
   it('does NOT animate the idle next-kickoff line', async () => {
     const up: Match = {
       id: 7, group: null,

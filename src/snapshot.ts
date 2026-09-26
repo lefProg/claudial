@@ -1,4 +1,4 @@
-import { fetchLive, fetchRecent, fetchUpcoming } from './api/backend.js';
+import { fetchLive, fetchRecent, fetchUpcoming, followsNothing } from './api/backend.js';
 import { formatKickoff } from './ui/UpcomingSection.js';
 import { homeTag, awayTag } from './ui/flags.js';
 import type { Match } from './types.js';
@@ -14,6 +14,7 @@ export async function printSnapshot(seasonId: number): Promise<void> {
     fetchLive(), fetchUpcoming(seasonId), fetchRecent(seasonId),
   ]);
   console.log('claudial - LIVE FOOTBALL');
+  if (await followsNothing().catch(() => false)) console.log('You follow nothing yet. Run: claudial follow');
   const liveIds = new Set(live.map((m) => m.id));
   for (const m of [...live, ...recent.filter((r) => !liveIds.has(r.id))]) console.log(line(m));
   if (upcoming.length) console.log('UPCOMING');

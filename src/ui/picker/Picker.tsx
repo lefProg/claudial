@@ -2,7 +2,7 @@ import { useEffect, useReducer, useState } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import { ACCENT, RED } from '../Header.js';
 import {
-  getSettings, listLeagues, listTeams, markOnboarded, putSettings,
+  getSettings, listLeagues, listTeams, putSettings,
   type LeagueInfo, type Settings, type TeamInfo,
 } from '../../api/backend.js';
 import {
@@ -18,10 +18,9 @@ export interface PickerApi {
   listTeams: (slug: string) => Promise<TeamInfo[]>;
   getSettings: () => Promise<Settings>;
   putSettings: (s: Settings) => Promise<Settings>;
-  markOnboarded: () => Promise<void>;
 }
 
-const defaultApi: PickerApi = { listLeagues, listTeams, getSettings, putSettings, markOnboarded };
+const defaultApi: PickerApi = { listLeagues, listTeams, getSettings, putSettings };
 
 export interface PickerResult { saved: boolean; settings: Settings }
 
@@ -76,8 +75,7 @@ export function Picker({ onDone, api = defaultApi, intro }: {
     if (!s.dirty) { onDone({ saved: false, settings }); return; }
     setPhase({ kind: 'saving' });
     api.putSettings(settings)
-      .then(async (stored) => {
-        await api.markOnboarded().catch(() => {});
+      .then((stored) => {
         setPhase({ kind: 'saved', settings: stored });
         setTimeout(() => onDone({ saved: true, settings: stored }), 900);
       })
