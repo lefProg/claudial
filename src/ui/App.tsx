@@ -1,9 +1,9 @@
-import { useEffect, useReducer, useRef } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { Box, useApp, useInput } from 'ink';
 import { initialState, reducer } from '../state.js';
 import { startPoller, type Poller, type PollerDeps } from '../engine/poller.js';
 import type { Match } from '../types.js';
-import { fetchIncidents, fetchLive, fetchRecent, fetchUpcoming } from '../api/espn.js';
+import { fetchIncidents, fetchLive, fetchRecent, fetchUpcoming, invalidateState, subscribeEvents } from '../api/backend.js';
 import { fetchPredictions } from '../predictions/client.js';
 import { Header } from './Header.js';
 import { DaySection } from './DaySection.js';
@@ -12,6 +12,7 @@ import { UpcomingSection } from './UpcomingSection.js';
 import { Footer } from './Footer.js';
 import { TakeoverView } from './TakeoverView.js';
 import { Ticker } from './Ticker.js';
+import { Picker } from './picker/Picker.js';
 
 export type Mode = 'board' | 'ticker';
 
@@ -26,6 +27,10 @@ export function App({ seasonId, mode = 'board' }: { seasonId: number; mode?: Mod
   const [state, dispatch] = useReducer(reducer, initialState);
   const { exit } = useApp();
   const pollerRef = useRef<Poller | null>(null);
+  const [picking, setPicking] = useState(false);
+  // Bumped after the picker saves: the event stream reads settings at connect
+  // time, so it has to reconnect to see the new subscriptions.
+  const [streamGen, setStreamGen] = useState(0);
 
   useEffect(() => {
     const deps: PollerDeps = {
@@ -42,10 +47,21 @@ export function App({ seasonId, mode = 'board' }: { seasonId: number; mode?: Mod
     return () => pollerRef.current?.stop();
   }, [seasonId]);
 
+  // Push: any server event (goal, card, kickoff...) triggers an immediate refresh,
+  // so takeovers fire within a second instead of on the next 15 s poll.
+  useEffect(() => {
+    const unsubscribe = subscribeEvents(() => {
+      invalidateState();
+      pollerRef.current?.refreshNow();
+    });
+    return unsubscribe;
+  }, [streamGen]);
+
   useInput((input) => {
     if (input === 'q') exit();
     if (input === 'r') pollerRef.current?.refreshNow();
-  });
+    if (input === 'f' && mode === 'board') setPicking(true);
+  }, { isActive: !picking });
 
   const compact = mode === 'board' && (process.stdout.columns ?? 80) < 70;
 
@@ -56,6 +72,19 @@ export function App({ seasonId, mode = 'board' }: { seasonId: number; mode?: Mod
     const t = setTimeout(() => dispatch({ type: 'takeoverDone' }), 4_000);
     return () => clearTimeout(t);
   }, [playing]);
+
+  if (picking) {
+    return (
+      <Picker onDone={(r) => {
+        setPicking(false);
+        if (r.saved) {
+          invalidateState();
+          pollerRef.current?.refreshNow();
+          setStreamGen((g) => g + 1);
+        }
+      }} />
+    );
+  }
 
   if (playing && mode === 'board') return <TakeoverView takeover={playing} />;
 

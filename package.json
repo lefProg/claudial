@@ -1,7 +1,7 @@
 {
   "name": "claudial",
   "version": "0.6.4",
-  "description": "Live World Cup 2026 fixtures in your terminal — goal, red-card and VAR takeovers included",
+  "description": "Live football scores for your leagues and teams, in your terminal and Claude Code's status bar — goal and red-card takeovers included",
   "type": "module",
   "bin": {
     "claudial": "dist/index.js"
@@ -16,7 +16,7 @@
     "build": "rm -rf dist && tsc && chmod +x dist/index.js",
     "dev": "tsx src/index.tsx",
     "test": "vitest run",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "node scripts/check-release.mjs && npm run build"
   },
   "dependencies": {
     "ink": "^5.2.0",
@@ -30,8 +30,9 @@
     "vitest": "^2.1.0"
   },
   "keywords": [
+    "football",
+    "premier-league",
     "worldcup",
-    "world-cup-2026",
     "tui",
     "cli",
     "football",

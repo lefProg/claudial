@@ -29,9 +29,9 @@ export function TakeoverView({ takeover }: { takeover: Takeover }) {
         </Text>
         {takeover.detail ? <Text dimColor wrap="truncate">{takeover.detail}</Text> : null}
         <Text wrap="truncate">
-          <Text dimColor>{homeTag(match.home.code)}  </Text>
+          <Text dimColor>{homeTag(match.home.code, match.home.national)}  </Text>
           <Text bold color={ACCENT}>{takeover.homeScore} — {takeover.awayScore}</Text>
-          <Text dimColor>  {awayTag(match.away.code)}</Text>
+          <Text dimColor>  {awayTag(match.away.code, match.away.national)}</Text>
         </Text>
       </Box>
     );
@@ -55,9 +55,9 @@ export function TakeoverView({ takeover }: { takeover: Takeover }) {
         <Box marginTop={1}><Text dimColor>{takeover.detail}</Text></Box>
       ) : null}
       <Box marginTop={1}>
-        <Text dimColor>{homeTag(match.home.code)}  </Text>
+        <Text dimColor>{homeTag(match.home.code, match.home.national)}  </Text>
         <Text bold color={ACCENT}>{takeover.homeScore} — {takeover.awayScore}</Text>
-        <Text dimColor>  {awayTag(match.away.code)}</Text>
+        <Text dimColor>  {awayTag(match.away.code, match.away.national)}</Text>
       </Box>
     </Box>
   );

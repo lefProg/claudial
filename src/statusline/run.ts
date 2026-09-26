@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
-import { fetchLive as realFetchLive, fetchRecent as realFetchRecent, fetchUpcoming as realFetchUpcoming, fetchLiveRedCards as realFetchLiveRedCards, type RedCardEvent } from '../api/espn.js';
+import { fetchLive as realFetchLive, fetchRecent as realFetchRecent, fetchUpcoming as realFetchUpcoming, fetchLiveRedCards as realFetchLiveRedCards, type RedCardEvent } from '../api/backend.js';
 import { scoreLine } from './line.js';
+import { ensureOnboarded } from '../api/backend.js';
 import { makeCache, TTL_MS, type StatuslineCache } from './cache.js';
 import { goalKickFrame } from './anim.js';
 import type { Match } from '../types.js';
@@ -15,6 +16,8 @@ export interface RunDeps {
   fetchPredictions: () => Promise<Prediction[]>;
   cache: StatuslineCache;
   branchOf: (input: string) => string | null;
+  /** First-run league subscription; injected so tests never touch the network or ~/.config. */
+  onboard: () => Promise<void>;
   timeoutMs: number;
 }
 
@@ -36,6 +39,7 @@ export async function runStatusline(input: string, deps: RunDeps, now: number = 
   const fresh = cached != null && cached.ageMs <= TTL_MS;
   if (!fresh && cache.tryLock(now)) {
     try {
+      await withTimeout(deps.onboard(), deps.timeoutMs);
       const [liveM, recentM, upcomingM, redsM, predsM] = await withTimeout(
         Promise.all([deps.fetchLive(), deps.fetchRecent(), deps.fetchUpcoming(2026), deps.fetchRedCards(), deps.fetchPredictions()]),
         deps.timeoutMs,
@@ -84,6 +88,7 @@ export function defaultDeps(): RunDeps {
     fetchPredictions: () => realFetchPredictions(),
     cache: makeCache(),
     branchOf: defaultBranchOf,
+    onboard: ensureOnboarded,
     timeoutMs: 3000,
   };
 }

@@ -30,7 +30,7 @@ export function UpcomingSection({
     const pred = matchPrediction(m, predictions);
     return (
       <Box flexDirection="column">
-        <Text dimColor>○ {homeTag(m.home.code)} — {awayTag(m.away.code)} {formatKickoff(m.startTimestamp)}</Text>
+        <Text dimColor>○ {homeTag(m.home.code, m.home.national)} — {awayTag(m.away.code, m.away.national)} {formatKickoff(m.startTimestamp)}</Text>
         {pred ? <Text color="yellow">{headline(pred)}</Text> : null}
       </Box>
     );
@@ -45,7 +45,7 @@ export function UpcomingSection({
           <Box key={m.id} flexDirection="column">
             <Text>
               <Text dimColor>○ {formatKickoff(m.startTimestamp).padEnd(13)}</Text>
-              {homeTag(m.home.code)} — {awayTag(m.away.code)}
+              {homeTag(m.home.code, m.home.national)} — {awayTag(m.away.code, m.away.national)}
               {m.group ? <Text dimColor>  ·  {m.group}</Text> : null}
             </Text>
             {pred && i === 0

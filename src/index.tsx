@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { render } from 'ink';
 import { App } from './ui/App.js';
-import { resolveSeasonId } from './api/espn.js';
+import { FOLLOW_COMMANDS } from './cli/follow.js';
+import { ensureOnboarded, resolveSeasonId } from './api/backend.js';
 
 // exit quietly when the consumer of a pipe closes early (e.g. `claudial | head`)
 process.stdout.on('error', (err: NodeJS.ErrnoException) => {
@@ -22,6 +23,11 @@ function readStdin(): Promise<string> {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+
+  if (args[0] && (FOLLOW_COMMANDS as readonly string[]).includes(args[0])) {
+    const { runFollow } = await import('./cli/follow.js');
+    process.exit(await runFollow(args));
+  }
 
   if (args[0] === 'setup') {
     const { runSetup } = await import('./setup/index.js');
@@ -78,11 +84,14 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
+  // First run: a brand-new device follows every league (fail-silent, retried next start).
+  await ensureOnboarded();
+
   let seasonId: number;
   try {
     seasonId = await resolveSeasonId();
   } catch {
-    console.error('claudial: could not reach ESPN. Check your connection and try again.');
+    console.error('claudial: could not reach the claudial server. Check your connection and try again.');
     process.exit(1);
   }
   if (!process.stdout.isTTY) {
@@ -96,6 +105,6 @@ async function main(): Promise<void> {
 }
 
 main().catch(() => {
-  console.error('claudial: could not reach ESPN. Check your connection and try again.');
+  console.error('claudial: could not reach the claudial server. Check your connection and try again.');
   process.exit(1);
 });

@@ -87,28 +87,28 @@ describe('predictionsUrl', () => {
   it('uses the env var when set', () => {
     expect(predictionsUrl({ CLAUDIAL_PREDICTIONS_URL: 'http://custom/' })).toBe('http://custom/');
   });
-  it('falls back to the shipped default URL', () => {
-    expect(predictionsUrl({})).toMatch(/^https?:\/\//);
+  it('is empty when the user has not opted in', () => {
+    expect(predictionsUrl({})).toBe('');
   });
 });
 
 describe('predictionsEnabled', () => {
-  it('is on by default (shipped URL)', () => {
-    expect(predictionsEnabled({})).toBe(true);
+  it('is off by default: betting content is opt-in', () => {
+    expect(predictionsEnabled({})).toBe(false);
   });
-  it('stays on with an env override', () => {
+  it('is on once the user sets the env var', () => {
     expect(predictionsEnabled({ CLAUDIAL_PREDICTIONS_URL: 'http://x' })).toBe(true);
   });
 });
 
 describe('fetchPredictions', () => {
-  it('fetches the shipped default URL when no env var is set', async () => {
+  it('makes no request and returns [] when the user has not opted in', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'claudial-pred-'));
-    let calledUrl = '';
-    const fetchImpl = (async (u: string) => { calledUrl = u; return new Response(JSON.stringify([pred()])); }) as unknown as typeof fetch;
+    let calls = 0;
+    const fetchImpl = (async () => { calls++; return new Response(JSON.stringify([pred()])); }) as unknown as typeof fetch;
     const out = await fetchPredictions({ env: {}, fetchImpl, dir });
-    expect(out[0]?.pick.label).toBe('SUI win');
-    expect(calledUrl).toMatch(/^https?:\/\//);
+    expect(out).toEqual([]);
+    expect(calls).toBe(0);
   });
 
   it('fetches, returns and caches when enabled', async () => {

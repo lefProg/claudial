@@ -36,12 +36,12 @@ export function MatchRow({ m, incidents, compact }: {
 }) {
   if (m.status === 'upcoming') {
     if (compact) {
-      return <Text dimColor>○ {homeTag(m.home.code)} — {awayTag(m.away.code)} {formatKickoff(m.startTimestamp)}</Text>;
+      return <Text dimColor>○ {homeTag(m.home.code, m.home.national)} — {awayTag(m.away.code, m.away.national)} {formatKickoff(m.startTimestamp)}</Text>;
     }
     return (
       <Text>
         <Text dimColor>○ {formatKickoff(m.startTimestamp).padEnd(13)}</Text>
-        {homeTag(m.home.code)} — {awayTag(m.away.code)}
+        {homeTag(m.home.code, m.home.national)} — {awayTag(m.away.code, m.away.national)}
         {m.group ? <Text dimColor>  ·  {m.group}</Text> : null}
       </Text>
     );
@@ -51,7 +51,7 @@ export function MatchRow({ m, incidents, compact }: {
       <Text>
         <Text color={m.status === 'finished' ? undefined : ACCENT}>⏺</Text>
         <Text dimColor> {statusLabel(m)} </Text>
-        {homeTag(m.home.code)} <Text bold color={ACCENT}>{m.homeScore ?? '–'}—{m.awayScore ?? '–'}</Text> {awayTag(m.away.code)}
+        {homeTag(m.home.code, m.home.national)} <Text bold color={ACCENT}>{m.homeScore ?? '–'}—{m.awayScore ?? '–'}</Text> {awayTag(m.away.code, m.away.national)}
         {m.varInProgress ? <Text dimColor> ⚖</Text> : null}
       </Text>
     );
@@ -65,7 +65,7 @@ export function MatchRow({ m, incidents, compact }: {
         {m.varInProgress ? <Text dimColor>  ·  ⚖ VAR</Text> : null}
       </Text>
       <Text>
-        {'   '}{homeTag(m.home.code)}  <Text bold color={ACCENT}>{m.homeScore ?? '–'} — {m.awayScore ?? '–'}</Text>  {awayTag(m.away.code)}
+        {'   '}{homeTag(m.home.code, m.home.national)}  <Text bold color={ACCENT}>{m.homeScore ?? '–'} — {m.awayScore ?? '–'}</Text>  {awayTag(m.away.code, m.away.national)}
       </Text>
       <ScorerLine incidents={incidents} />
       <FeedLine incidents={incidents} />

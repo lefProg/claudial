@@ -27,6 +27,7 @@ function deps(over = {}) {
     fetchPredictions: async () => [],
     cache: makeCache(dir),
     branchOf: () => 'main',
+    onboard: async () => {},
     timeoutMs: 3000,
     ...over,
   };

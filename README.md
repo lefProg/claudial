@@ -2,10 +2,10 @@
 
 # ⚽ claudial
 
-### Live World Cup 2026 in your terminal — goal and red-card takeovers included
+### Live football in your terminal — goal and red-card takeovers included
 
-One command. Every World Cup score, in your terminal and right inside Claude
-Code, while you work.
+One command. Your leagues and your teams, live in your terminal and right inside
+Claude Code, while you work.
 
 ```
 npm install -g claudial && claudial setup
@@ -25,16 +25,16 @@ npm install -g claudial && claudial setup
 
 ---
 
-Live World Cup scores right inside Claude Code's status bar — under the input
-box, always visible while you work, lighting up the moment anyone scores:
+Live scores right inside Claude Code's status bar — under the input box, always
+visible while you work, lighting up the moment anyone scores:
 
 <div align="center">
 
-![claudial — live World Cup 2026 scores in Claude Code's status bar](demo.gif)
+![claudial — live football scores in Claude Code's status bar](demo.gif)
 
 </div>
 
-## Claude Code, World Cup edition
+## Your matches, in Claude Code
 
 The whole point: your Claude Code, score-aware. One command and the live score
 sits right in Claude Code's status bar — under the input box, always visible
@@ -48,7 +48,8 @@ claudial setup
 The wizard drops a live-score statusline into your Claude Code settings:
 
 ```
-⚽ QAT 🇶🇦 0—1 🇨🇭 SUI 67' · main          ← during a match
+⚽ PAO 1—0 OLY 67' · main                   ← during a match
+⚽ QAT 🇶🇦 0—1 🇨🇭 SUI 67' · main          ← national teams get their flags
 ○ QAT 🇶🇦 — 🇨🇭 SUI 10:00 PM · main        ← between matches (next kickoff, or last result)
 ⚽ G O O O L  ·  ARG 🇦🇷 1—0 🇲🇽 MEX        ← for 15s whenever anyone scores
 🟥 R E D  ·  OTAMENDI  ·  ARG 🇦🇷 — 🇲🇽 MEX  ← for 15s on a red card
@@ -61,12 +62,36 @@ Scriptable, no prompts: `claudial setup --statusline --global --yes`.
 **Already run a custom status line?** `claudial setup` keeps it — it wraps your
 existing one and appends the score, so nothing you had is lost.
 
+## Pick your teams from a list
+
+`claudial setup` ends by asking what you follow. Type a team's name, tick it with
+space, press esc to save:
+
+```
+ claudial · what do you follow?
+
+ search › pana▏
+
+   ○ Panama  PAN · FIFA World Cup
+ › ◉ Panathinaikos  PAO · Super League Greece
+
+ Following Panathinaikos
+ ↑↓ move · space follow · type to search · esc clear search · ctrl+c cancel
+```
+
+With the search empty you see the ten leagues: space follows a whole league, enter
+browses its teams. Change your mind any time with `claudial follow`, or press `f` in
+the dashboard. `claudial forget` deletes this device from the server.
+
+For scripts there are plain commands too: `claudial leagues`, `claudial teams <league> [search]`,
+`claudial follow <league or team id>...`, `claudial unfollow ...`, `claudial following`.
+
 ## The full dashboard
 
 Prefer the full board beside Claude? `claudial` opens a live dashboard — every
-match with scores, minutes and scorers, upcoming fixtures in your local time,
-all auto-refreshing while you work. And when a goal goes in — anywhere in the
-tournament — the whole screen takes over:
+match you follow with scores, minutes and scorers, the next ten days of fixtures
+in your local time, all auto-refreshing while you work. And when a goal goes in,
+the whole screen takes over:
 
 ```
 
@@ -101,20 +126,22 @@ npm install -g claudial
 claudial
 ```
 
-Requires Node ≥ 18. No account, no API key, no config.
+Requires Node ≥ 18. No account, no API key.
 
 | Key | Action      |
 |-----|-------------|
 | `r` | refresh now |
+| `f` | pick what you follow |
 | `q` | quit        |
 
-Beyond goals, every live match carries its incident feed — yellow cards,
-substitutions, injury time — and red cards get the full-screen treatment, same
-as goals.
+Beyond goals, every live match carries its incident feed (goals, yellow and red
+cards), and red cards get the full-screen treatment, same as goals. Goals and
+cards are pushed from the server the moment it sees them.
 
 ## Status
 
-v1 is being built live during the group stage. Follow the commits.
+The World Cup is over; claudial now follows ten leagues through its own server,
+[claudial-backend](https://github.com/lefProg/claudial-backend).
 
 ## Notes
 
@@ -122,15 +149,19 @@ v1 is being built live during the group stage. Follow the commits.
   terminal isn't rendering flag emoji. Install [Konsole](https://konsole.kde.org/)
   — it shows them out of the box. (macOS terminals already do; Windows
   Terminal does not.)
-- Match data comes from [ESPN's public soccer scoreboard](https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard)
-  — facts only (scores, scorers, cards), no logos or branding. See
-  [DATA.md](DATA.md) for why this source. Not affiliated with or endorsed by
-  ESPN or FIFA.
+- claudial talks only to the claudial server, which gets match facts (scores,
+  scorers, cards; no logos or branding) from ESPN's public site API. See
+  [DATA.md](DATA.md). Not affiliated with or endorsed by ESPN, FIFA or any league.
+- The server stores a random device id and what you follow, nothing else; its
+  [privacy page](https://github.com/lefProg/claudial-backend/blob/main/PRIVACY.md)
+  has the details.
+- Betting predictions are off unless you set `CLAUDIAL_PREDICTIONS_URL`. They show
+  stakes and odds: for adults only, where betting is legal. Please bet responsibly.
 - Not affiliated with Anthropic. The aesthetic is a love letter to
   [Claude Code](https://claude.com/claude-code), whose terminal UI this
   proudly imitates.
-- Polling is deliberately gentle (15 s live, 5 min fixtures), and a single
-  scoreboard call serves all live matches at once. Please keep it that way.
+- The client polls its own server gently (15 s, plus pushed events), and the
+  server makes one set of ESPN calls for everybody. Please keep it that way.
 
 ```js
 // Canada — Bosnia & Herzegovina, 12 June 2026, was on while this was built.

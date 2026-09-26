@@ -61,4 +61,16 @@ export async function runSetup(args: string[]): Promise<void> {
     );
     waitUntilExit().then(() => resolve());
   });
+
+  // Second step: what to follow. Skippable with esc; `claudial follow` reopens it.
+  if (process.stdin.isTTY) {
+    const { runPicker } = await import('../ui/picker/run.js');
+    const r = await runPicker('Last step: pick your leagues and teams. Type a team name to find it.');
+    if (!r?.saved) {
+      const following = r && r.settings.leagues.length + r.settings.teams.length > 0;
+      console.log(following
+        ? 'Keeping what you follow. Change it any time: claudial follow'
+        : 'You can pick your teams any time: claudial follow');
+    }
+  }
 }
