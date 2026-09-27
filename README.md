@@ -17,7 +17,7 @@ npm install -g claudial && claudial setup
 [![npm downloads](https://img.shields.io/npm/dm/claudial?style=flat-square&color=CB3837&logo=npm)](https://www.npmjs.com/package/claudial)
 [![node](https://img.shields.io/node/v/claudial?style=flat-square&color=339933&logo=node.js&logoColor=white)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](tsconfig.json)
-[![backend](https://img.shields.io/badge/backend-Rust-DEA584?style=flat-square&logo=rust&logoColor=white)](https://github.com/lefProg/claudial-backend)
+![backend](https://img.shields.io/badge/backend-Rust-DEA584?style=flat-square&logo=rust&logoColor=white)
 [![license](https://img.shields.io/npm/l/claudial?style=flat-square&color=blue)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/lefProg/claudial?style=flat-square&color=f5c518&logo=github)](https://github.com/lefProg/claudial/stargazers)
 
@@ -76,8 +76,8 @@ in the dashboard, or run `claudial follow`.
 ## A goal takes over the whole screen
 
 Want the full board beside Claude? `claudial` opens a live dashboard: every
-match you follow with scores, minutes, scorers and cards, plus the next ten
-days of fixtures in your local time.
+match you follow with scores, minutes, scorers and cards, plus the next three
+weeks of fixtures in your local time.
 
 When a goal goes in, the server pushes it within a second, and the whole
 screen becomes the goal: the scorer, the minute, the new score. Four seconds
@@ -108,14 +108,15 @@ work without the UI. `claudial forget` deletes your device from the server.
 ## Status
 
 claudial started as a World Cup 2026 side project. It now follows ten leagues
-through its own server, [claudial-backend](https://github.com/lefProg/claudial-backend),
-written in Rust: one set of polls for everyone, goals pushed to every terminal
-over server-sent events.
+through its own server, written in Rust: one set of polls for everyone, goals
+pushed to every terminal over server-sent events.
 
 ## Notes
 
-- The server stores a random device id and what you follow, nothing else. See
-  its [privacy page](https://github.com/lefProg/claudial-backend/blob/main/PRIVACY.md).
+- Privacy: the server stores a random device id, what you follow, and when it
+  last saw you. No accounts, emails, names or analytics, and your IP is never
+  written down. Inactive devices are deleted after 400 days; `claudial forget`
+  deletes yours right away.
 - Match facts (scores, scorers, cards) come from ESPN's public site API, through
   the claudial server. No logos or branding. Not affiliated with or endorsed by
   ESPN, FIFA, UEFA or any league.
@@ -156,7 +157,6 @@ npm test        # vitest
 
 [Report a bug](https://github.com/lefProg/claudial/issues) ·
 [Request a feature](https://github.com/lefProg/claudial/issues) ·
-[npm](https://www.npmjs.com/package/claudial) ·
-[Backend](https://github.com/lefProg/claudial-backend)
+[npm](https://www.npmjs.com/package/claudial)
 
 </div>
