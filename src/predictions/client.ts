@@ -4,19 +4,18 @@ import { join } from 'node:path';
 import type { Prediction } from './types.js';
 
 const ENV = 'CLAUDIAL_PREDICTIONS_URL';
-// Shipped default so predictions work out of the box from the published package.
-// Override with CLAUDIAL_PREDICTIONS_URL (e.g. your own backend, or to disable
-// by pointing it elsewhere).
-const DEFAULT_PREDICTIONS_URL = 'http://161.97.67.12:8000/api/predictions/';
+// Betting predictions are OFF unless the user opts in by setting
+// CLAUDIAL_PREDICTIONS_URL. They show stakes and bookmaker odds, which is
+// gambling content: never on by default, and only for adults (README).
 // Predictions only change every few hours server-side, so poll gently.
 const CACHE_TTL_MS = 30 * 60 * 1000;
 
-/** Resolve the API URL: explicit env var wins, else the shipped default. */
+/** The predictions API URL, or '' when the user has not opted in. */
 export function predictionsUrl(env: NodeJS.ProcessEnv = process.env): string {
-  return env[ENV] || DEFAULT_PREDICTIONS_URL;
+  return env[ENV] || '';
 }
 
-/** A URL is always resolvable now (shipped default), so predictions are on. */
+/** Predictions are opt-in: on only when CLAUDIAL_PREDICTIONS_URL is set. */
 export function predictionsEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   return !!predictionsUrl(env);
 }

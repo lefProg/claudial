@@ -2,7 +2,8 @@ export type MatchStatus = 'live' | 'halftime' | 'finished' | 'upcoming';
 
 export interface Team {
   name: string;
-  code: string; // FIFA-style nameCode, e.g. "CAN"
+  code: string; // short code, e.g. "CAN", "PAO"
+  national?: boolean; // national team (country flag applies); clubs are false. Absent means national.
 }
 
 export interface Match {

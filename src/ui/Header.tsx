@@ -10,7 +10,7 @@ export function Header({ stale, lastUpdated }: { stale: boolean; lastUpdated: nu
   return (
     <Box marginBottom={1}>
       <Text bold color={ACCENT}>claudial</Text>
-      <Text dimColor> · WORLD CUP 2026</Text>
+      <Text dimColor> · LIVE FOOTBALL</Text>
       <Text dimColor>{'  '}✻ {stale ? 'stale · retrying' : `updated ${updated}`}</Text>
     </Box>
   );

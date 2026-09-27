@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { render } from 'ink';
 import { App } from './ui/App.js';
-import { resolveSeasonId } from './api/espn.js';
+import { readFileSync } from 'node:fs';
+import { FOLLOW_COMMANDS, USAGE } from './cli/follow.js';
+import { resolveSeasonId } from './api/backend.js';
 
 // exit quietly when the consumer of a pipe closes early (e.g. `claudial | head`)
 process.stdout.on('error', (err: NodeJS.ErrnoException) => {
@@ -20,8 +22,34 @@ function readStdin(): Promise<string> {
   });
 }
 
+const HELP = `claudial: live football in your terminal and Claude Code's status bar
+
+  claudial                             the live dashboard (keys: f follow · r refresh · q quit)
+  claudial --ticker                    a 4-line strip for slim split panes
+  claudial | cat                       plain snapshot for pipes and scripts
+  claudial setup                       install the Claude Code status line and pick your teams
+  claudial setup --statusline --yes    install the status line only, no prompts
+${USAGE.replace(/^usage:\n/, '')}
+
+  CLAUDIAL_API_URL=<url>               use another claudial server`;
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+
+  if (args.includes('--help') || args.includes('-h') || args[0] === 'help') {
+    console.log(HELP);
+    process.exit(0);
+  }
+  if (args.includes('--version') || args.includes('-v')) {
+    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string };
+    console.log(pkg.version);
+    process.exit(0);
+  }
+
+  if (args[0] && (FOLLOW_COMMANDS as readonly string[]).includes(args[0])) {
+    const { runFollow } = await import('./cli/follow.js');
+    process.exit(await runFollow(args));
+  }
 
   if (args[0] === 'setup') {
     const { runSetup } = await import('./setup/index.js');
@@ -82,7 +110,7 @@ async function main(): Promise<void> {
   try {
     seasonId = await resolveSeasonId();
   } catch {
-    console.error('claudial: could not reach ESPN. Check your connection and try again.');
+    console.error('claudial: could not reach the claudial server. Check your connection and try again.');
     process.exit(1);
   }
   if (!process.stdout.isTTY) {
@@ -96,6 +124,6 @@ async function main(): Promise<void> {
 }
 
 main().catch(() => {
-  console.error('claudial: could not reach ESPN. Check your connection and try again.');
+  console.error('claudial: could not reach the claudial server. Check your connection and try again.');
   process.exit(1);
 });

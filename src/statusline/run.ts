@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
-import { fetchLive as realFetchLive, fetchRecent as realFetchRecent, fetchUpcoming as realFetchUpcoming, fetchLiveRedCards as realFetchLiveRedCards, type RedCardEvent } from '../api/espn.js';
+import { fetchLive as realFetchLive, fetchRecent as realFetchRecent, fetchUpcoming as realFetchUpcoming, fetchLiveRedCards as realFetchLiveRedCards, type RedCardEvent } from '../api/backend.js';
 import { scoreLine } from './line.js';
+import { followsNothing } from '../api/backend.js';
 import { makeCache, TTL_MS, type StatuslineCache } from './cache.js';
 import { goalKickFrame } from './anim.js';
 import type { Match } from '../types.js';
@@ -15,10 +16,20 @@ export interface RunDeps {
   fetchPredictions: () => Promise<Prediction[]>;
   cache: StatuslineCache;
   branchOf: (input: string) => string | null;
+  /** Whether this device follows nothing yet; injected so tests never touch the network. */
+  followsNothing: () => Promise<boolean>;
   timeoutMs: number;
 }
 
 const PLACEHOLDER = '⚽ claudial · warming up';
+/** Shown until the user follows something: a new device starts with nothing. */
+export const FOLLOW_HINT = '⚽ claudial · run `claudial follow` to pick your teams';
+/** Following something, but nothing is scheduled for it yet (e.g. an international break). */
+export const NO_MATCHES = '⚽ claudial · no upcoming matches for your teams yet';
+/** The server has not answered for a while (or ever, on this machine). */
+export const OFFLINE = "⚽ claudial · can't reach the server, retrying";
+/** How long a failing server may keep showing the last good line before OFFLINE replaces it. */
+export const OFFLINE_AFTER_MS = 120_000;
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   let id: ReturnType<typeof setTimeout>;
@@ -40,12 +51,19 @@ export async function runStatusline(input: string, deps: RunDeps, now: number = 
         Promise.all([deps.fetchLive(), deps.fetchRecent(), deps.fetchUpcoming(2026), deps.fetchRedCards(), deps.fetchPredictions()]),
         deps.timeoutMs,
       );
-      const next = scoreLine(liveM, recentM, upcomingM, now, predsM);
+      let next = scoreLine(liveM, recentM, upcomingM, now, predsM);
+      // Nothing to show: say why, so the bar never looks stuck.
+      if (!next) next = (await withTimeout(deps.followsNothing(), deps.timeoutMs)) ? FOLLOW_HINT : NO_MATCHES;
       cache.updateGoalState(liveM, now);
       cache.updateRedCards(redsM, now);
-      if (next) { cache.write(next, now); line = next; }
+      cache.write(next, now);
+      line = next;
     } catch {
-      // keep last good cache (line already set)
+      // Keep the last good line through a short outage; after that, say so.
+      if (!line || (cached && cached.ageMs > OFFLINE_AFTER_MS)) {
+        line = OFFLINE;
+        cache.write(OFFLINE, now);
+      }
     } finally {
       cache.unlock();
     }
@@ -84,6 +102,7 @@ export function defaultDeps(): RunDeps {
     fetchPredictions: () => realFetchPredictions(),
     cache: makeCache(),
     branchOf: defaultBranchOf,
+    followsNothing,
     timeoutMs: 3000,
   };
 }

@@ -54,7 +54,11 @@ export function startPoller(deps: PollerDeps, opts: PollerOpts = {}): Poller {
     try {
       const matches = await deps.fetchLive();
       const scoreChanges = diffGoals(prev, matches);
+      // A match that left the live list has finished (or was postponed): refresh
+      // the finished/upcoming lists now, or it vanishes until the next fixtures tick.
+      const ended = prev.some((p) => !matches.some((m) => m.id === p.id));
       prev = matches;
+      if (ended) void refreshFixtures();
       deps.dispatch({ type: 'live', matches, at: Date.now() });
       failures = 0;
 
@@ -124,13 +128,17 @@ export function startPoller(deps: PollerDeps, opts: PollerOpts = {}): Poller {
     }
   }
 
-  async function fixturesTick(): Promise<void> {
+  async function refreshFixtures(): Promise<void> {
     try {
       const { upcoming, recent } = await deps.fetchFixtures();
       deps.dispatch({ type: 'fixtures', upcoming, recent });
     } catch {
       deps.dispatch({ type: 'stale' });
     }
+  }
+
+  async function fixturesTick(): Promise<void> {
+    await refreshFixtures();
     // Predictions ride the gentle fixtures cadence. fetchPredictions is
     // fail-silent (returns [] when disabled or on error), so this never
     // disturbs the board.

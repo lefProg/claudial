@@ -24,3 +24,5 @@ DATA.md
 # private prediction backend — deployed via FileZilla to the VPS, never on the
 # public (viral) repo. The harmless opt-in client lives in src/predictions/.
 /predictions/
+# fablize goal tracker (local)
+.fablize/

@@ -1,4 +1,4 @@
-// Country flag emoji for a team, keyed on ESPN's 3-letter abbreviation
+// Country flag emoji for a national team, keyed on its 3-letter abbreviation
 // (verified against the live FIFA World Cup feed — note ESPN uses MAR for
 // Morocco). Bracket placeholders (1A, QFW1, RD16 W1, …) have no flag.
 
@@ -35,14 +35,18 @@ export function flagFor(code: string): string {
   return '';
 }
 
-/** Home side: "QAT 🇶🇦" (flag trails the code), or just the code if unmapped. */
-export function homeTag(code: string): string {
-  const f = flagFor(code);
+/**
+ * Home side: "QAT 🇶🇦" (flag trails the code), or just the code if unmapped.
+ * Clubs (`national === false`) never get a flag: their codes collide with
+ * countries (PAN is Panetolikos, not Panama).
+ */
+export function homeTag(code: string, national: boolean = true): string {
+  const f = national ? flagFor(code) : '';
   return f ? `${code} ${f}` : code;
 }
 
-/** Away side: "🇨🇭 SUI" (flag leads the code), or just the code if unmapped. */
-export function awayTag(code: string): string {
-  const f = flagFor(code);
+/** Away side: "🇨🇭 SUI" (flag leads the code), or just the code if unmapped. Clubs get no flag. */
+export function awayTag(code: string, national: boolean = true): string {
+  const f = national ? flagFor(code) : '';
   return f ? `${f} ${code}` : code;
 }
