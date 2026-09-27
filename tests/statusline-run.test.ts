@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runStatusline, FOLLOW_HINT } from '../src/statusline/run.js';
+import { runStatusline, FOLLOW_HINT, NO_MATCHES, OFFLINE, OFFLINE_AFTER_MS } from '../src/statusline/run.js';
 import { makeCache } from '../src/statusline/cache.js';
 import type { Match } from '../src/types.js';
 
@@ -120,12 +120,30 @@ describe('runStatusline', () => {
     }), 1500);
     expect(out).toBe('⚽ OLD 0—0 CACHE');
   });
-  it('shows a warming-up placeholder with no cache and a failing fetch', async () => {
+  it('says the server is unreachable with no cache and a failing fetch', async () => {
     const out = await runStatusline('{}', deps({
       fetchLive: async () => { throw new Error('network'); },
       branchOf: () => null,
     }), 1000);
-    expect(out).toBe('⚽ claudial · warming up');
+    expect(out).toBe(OFFLINE);
+  });
+
+  it('keeps the last good line through a short outage, then says the server is unreachable', async () => {
+    const c = makeCache(dir);
+    const down = { fetchLive: async () => { throw new Error('network'); }, branchOf: () => null, cache: c };
+    const good = await runStatusline('{}', deps({ branchOf: () => null, cache: c }), 1_000);
+    expect(good).toContain('QAT');
+    expect(await runStatusline('{}', deps(down), 1_000 + 60_000)).toBe(good);
+    expect(await runStatusline('{}', deps(down), 1_000 + OFFLINE_AFTER_MS + 1)).toBe(OFFLINE);
+  });
+
+  it('says there are no upcoming matches when following something with nothing scheduled', async () => {
+    const out = await runStatusline('{}', deps({
+      fetchLive: async () => [] as Match[],
+      followsNothing: async () => false,
+      branchOf: () => null,
+    }), 0);
+    expect(out).toBe(NO_MATCHES);
   });
   it('shows the latest finished result when nothing is live and it is the closest moment', async () => {
     const HOUR = 3600;

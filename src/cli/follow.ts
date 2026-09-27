@@ -1,7 +1,7 @@
 import { rmSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  ApiError, forgetDevice, getSettings, listLeagues, listTeams, putSettings,
+  ApiError, apiUrl, forgetDevice, getSettings, listLeagues, listTeams, putSettings,
   type LeagueInfo, type Settings, type TeamInfo,
 } from '../api/backend.js';
 import { configDir } from '../api/device.js';
@@ -11,7 +11,7 @@ import { configDir } from '../api/device.js';
 
 export const FOLLOW_COMMANDS = ['leagues', 'teams', 'follow', 'unfollow', 'following', 'forget'] as const;
 
-const USAGE = `usage:
+export const USAGE = `usage:
   claudial follow                      pick your leagues and teams from a list
   claudial leagues                     the leagues you can follow (✓ = following)
   claudial teams <league> [search]     a league's teams and their ids, e.g. claudial teams gre.1 pana
@@ -43,6 +43,17 @@ export function matchesSearch(t: TeamInfo, search: string): boolean {
   const fold = (x: string) => x.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const q = fold(search);
   return fold(t.name).includes(q) || fold(t.code).includes(q);
+}
+
+/** One line for a failed command: the server's own message, or a plain "can't reach it". */
+export function describeError(e: unknown): string {
+  if (e instanceof ApiError) return `server said: ${e.message}`;
+  // fetch rejects with a TypeError when the network fails, and a Timeout/AbortError on our 8 s limit.
+  const name = e instanceof Error ? e.name : '';
+  if (e instanceof TypeError || name === 'TimeoutError' || name === 'AbortError') {
+    return `can't reach the claudial server (${apiUrl()}). Check your connection and try again.`;
+  }
+  return e instanceof Error ? e.message : String(e);
 }
 
 export async function runFollow(args: string[], out: Out = console.log): Promise<number> {
@@ -81,7 +92,12 @@ export async function runFollow(args: string[], out: Out = console.log): Promise
         const [leagues, s] = await Promise.all([listLeagues(), getSettings()]);
         const name = new Map(leagues.map((l) => [l.slug, l.name]));
         out(s.leagues.length ? `leagues: ${s.leagues.map((l) => `${l} (${name.get(l) ?? '?'})`).join(', ')}` : 'leagues: none');
-        out(s.teams.length ? `teams:   ${s.teams.join(', ')}  (names: claudial teams <league>)` : 'teams:   none');
+        if (s.teams.length === 0) { out('teams:   none'); return 0; }
+        // Settings hold team ids only; look their names up in every league's list.
+        const lists = await Promise.all(leagues.map((l) => listTeams(l.slug).catch(() => [] as TeamInfo[])));
+        const team = new Map<string, TeamInfo>();
+        for (const t of lists.flat()) if (!team.has(t.id)) team.set(t.id, t);
+        out(`teams:   ${s.teams.map((id) => { const t = team.get(id); return t ? `${t.name} (${id})` : id; }).join(', ')}`);
         return 0;
       }
       case 'forget': {
@@ -98,8 +114,7 @@ export async function runFollow(args: string[], out: Out = console.log): Promise
         return 2;
     }
   } catch (e) {
-    const msg = e instanceof ApiError ? `server said: ${e.message}` : e instanceof Error ? e.message : String(e);
-    out(`claudial: ${msg}`);
+    out(`claudial: ${describeError(e)}`);
     return 1;
   }
 }

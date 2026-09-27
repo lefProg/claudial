@@ -15,6 +15,7 @@ export async function printSnapshot(seasonId: number): Promise<void> {
   ]);
   console.log('claudial - LIVE FOOTBALL');
   if (await followsNothing().catch(() => false)) console.log('You follow nothing yet. Run: claudial follow');
+  else if (live.length + upcoming.length + recent.length === 0) console.log('No upcoming matches for what you follow yet.');
   const liveIds = new Set(live.map((m) => m.id));
   for (const m of [...live, ...recent.filter((r) => !liveIds.has(r.id))]) console.log(line(m));
   if (upcoming.length) console.log('UPCOMING');

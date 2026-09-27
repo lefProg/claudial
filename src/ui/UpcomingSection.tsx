@@ -10,7 +10,9 @@ export function formatKickoff(ts: number, now: number = Date.now()): string {
   const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
   const sameDay = d.toDateString() === new Date(now).toDateString();
   if (sameDay) return time;
-  const day = d.toLocaleDateString(undefined, { weekday: 'short' });
+  // Within the week a weekday is enough; further out (fixtures reach ~3 weeks) add the date.
+  const soon = ts * 1000 - now < 6 * 86_400_000;
+  const day = d.toLocaleDateString(undefined, soon ? { weekday: 'short' } : { weekday: 'short', day: 'numeric', month: 'short' });
   return `${day} ${time}`;
 }
 

@@ -14,12 +14,10 @@ export function ScorerLine({ incidents }: { incidents: MatchIncident[] }) {
 }
 
 export function FeedLine({ incidents }: { incidents: MatchIncident[] }) {
-  const feed = incidents.filter((i) => i.kind === 'yellowCard' || i.kind === 'substitution');
+  const feed = incidents.filter((i) => i.kind === 'yellowCard' || i.kind === 'redCard' || i.kind === 'substitution');
   if (feed.length === 0) return null;
-  const fmt = (i: MatchIncident) =>
-    i.kind === 'yellowCard'
-      ? `${i.minute ?? '?'}' 🟨 ${i.playerShort ?? '?'}`
-      : `${i.minute ?? '?'}' ⇄ ${i.playerShort ?? '?'}`;
+  const mark = { yellowCard: '🟨', redCard: '🟥' } as Partial<Record<MatchIncident['kind'], string>>;
+  const fmt = (i: MatchIncident) => `${i.minute ?? '?'}' ${mark[i.kind] ?? '⇄'} ${i.playerShort ?? '?'}`;
   // last 4 only — the feed is a pulse, not a log
   return <Text dimColor>{'   '}▪ {feed.slice(-4).map(fmt).join(' · ')}</Text>;
 }

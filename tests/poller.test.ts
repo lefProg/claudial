@@ -108,6 +108,18 @@ describe('startPoller', () => {
     poller.stop();
   });
 
+  it('refreshes the finished list as soon as a match leaves the live list', async () => {
+    const { deps, actions } = makeDeps([[base], []], [[]]);
+    const poller = startPoller(deps);
+    await vi.advanceTimersByTimeAsync(0);          // live: one match; fixtures fetched once at start
+    expect((deps.fetchFixtures as any).mock.calls.length).toBe(1);
+    poller.refreshNow();                           // the match has finished: live is empty
+    await vi.advanceTimersByTimeAsync(0);
+    expect((deps.fetchFixtures as any).mock.calls.length).toBe(2);
+    expect(actions.filter((a) => a.type === 'fixtures').length).toBe(2);
+    poller.stop();
+  });
+
   it('refreshNow triggers an immediate live fetch', async () => {
     const { deps } = makeDeps([[base]], [[]]);
     const poller = startPoller(deps);

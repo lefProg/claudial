@@ -13,6 +13,7 @@ import { Footer } from './Footer.js';
 import { TakeoverView } from './TakeoverView.js';
 import { Ticker } from './Ticker.js';
 import { Picker } from './picker/Picker.js';
+import { boardNotice } from './notice.js';
 
 export type Mode = 'board' | 'ticker';
 
@@ -100,13 +101,20 @@ export function App({ seasonId, mode = 'board' }: { seasonId: number; mode?: Mod
 
   const all = dedupeById([...state.live, ...state.recent, ...state.upcoming]);
   const { yesterday, today, future } = partitionByDay(all, Date.now());
+  const notice = boardNotice({ followsNone, stale: state.stale, lastUpdated: state.lastUpdated, matchCount: all.length });
 
   return (
     <Box flexDirection="column" paddingX={1} paddingY={1}>
       <Header stale={state.stale} lastUpdated={state.lastUpdated} />
-      {followsNone ? (
+      {notice ? (
         <Box marginBottom={1}>
-          <Text>You don't follow anything yet. Press <Text bold color={ACCENT}>f</Text> to pick your leagues and teams.</Text>
+          {notice === 'offline' ? <Text>Can't reach the claudial server. Retrying…</Text> : null}
+          {notice === 'follow-nothing' ? (
+            <Text>You don't follow anything yet. Press <Text bold color={ACCENT}>f</Text> to pick your leagues and teams.</Text>
+          ) : null}
+          {notice === 'no-matches' ? (
+            <Text>No upcoming matches for what you follow yet. They show up here as soon as they're scheduled. <Text dimColor>(<Text bold color={ACCENT}>f</Text> to follow more)</Text></Text>
+          ) : null}
         </Box>
       ) : null}
       <DaySection label="TODAY" matches={today} incidents={state.incidents} compact={compact} />

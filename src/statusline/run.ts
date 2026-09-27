@@ -24,6 +24,12 @@ export interface RunDeps {
 const PLACEHOLDER = '⚽ claudial · warming up';
 /** Shown until the user follows something: a new device starts with nothing. */
 export const FOLLOW_HINT = '⚽ claudial · run `claudial follow` to pick your teams';
+/** Following something, but nothing is scheduled for it yet (e.g. an international break). */
+export const NO_MATCHES = '⚽ claudial · no upcoming matches for your teams yet';
+/** The server has not answered for a while (or ever, on this machine). */
+export const OFFLINE = "⚽ claudial · can't reach the server, retrying";
+/** How long a failing server may keep showing the last good line before OFFLINE replaces it. */
+export const OFFLINE_AFTER_MS = 120_000;
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   let id: ReturnType<typeof setTimeout>;
@@ -46,14 +52,18 @@ export async function runStatusline(input: string, deps: RunDeps, now: number = 
         deps.timeoutMs,
       );
       let next = scoreLine(liveM, recentM, upcomingM, now, predsM);
-      // Nothing to show: say how to start if the device follows nothing.
-      if (!next && await withTimeout(deps.followsNothing(), deps.timeoutMs)) next = FOLLOW_HINT;
+      // Nothing to show: say why, so the bar never looks stuck.
+      if (!next) next = (await withTimeout(deps.followsNothing(), deps.timeoutMs)) ? FOLLOW_HINT : NO_MATCHES;
       cache.updateGoalState(liveM, now);
       cache.updateRedCards(redsM, now);
-      if (next) { cache.write(next, now); line = next; }
-      else if (line === FOLLOW_HINT) line = null; // followed something since
+      cache.write(next, now);
+      line = next;
     } catch {
-      // keep last good cache (line already set)
+      // Keep the last good line through a short outage; after that, say so.
+      if (!line || (cached && cached.ageMs > OFFLINE_AFTER_MS)) {
+        line = OFFLINE;
+        cache.write(OFFLINE, now);
+      }
     } finally {
       cache.unlock();
     }
