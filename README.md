@@ -32,6 +32,20 @@ Europa League · Conference League · Super League Greece · World Cup**
 
 ---
 
+## Get started
+
+| You are… | Run |
+|---|---|
+| **New to claudial** | `npm install -g claudial`<br>`claudial setup` |
+| **Back from the World Cup** (you have 0.6.x) | `npm install -g claudial@latest`<br>`claudial --version` (should print 0.7.0 or newer)<br>`claudial follow` |
+
+Then restart Claude Code. World Cup users keep their status line as it is; `claudial follow`
+picks your leagues and teams, because the new version starts following nothing.
+
+Still seeing "WORLD CUP 2026" after updating? An old copy comes first on your PATH.
+`which -a claudial` lists every copy; remove the old one with
+`npm uninstall -g --prefix <its folder> claudial` (e.g. `--prefix ~/.npm-global`).
+
 ## The score, right under your prompt
 
 One command puts a live score line into Claude Code's status bar. It stays out
