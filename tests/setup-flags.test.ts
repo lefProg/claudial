@@ -17,4 +17,9 @@ describe('parseFlags', () => {
   it('ignores an invalid --shell value (left null)', () => {
     expect(parseFlags(['--tmux', '--shell', 'nonsense']).shell).toBeNull();
   });
+
+  it('--cursor selects Cursor CLI and runs without prompts', () => {
+    expect(parseFlags(['--cursor'])).toMatchObject({ cursor: true, statusline: false, interactive: false });
+    expect(parseFlags(['--statusline']).cursor).toBe(false);
+  });
 });

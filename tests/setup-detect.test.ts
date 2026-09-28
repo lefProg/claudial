@@ -27,3 +27,16 @@ describe('isWindows', () => {
     expect(isWindows('linux')).toBe(false);
   });
 });
+
+describe('hasCursor', () => {
+  it('is true only when ~/.cursor exists', async () => {
+    const { hasCursor } = await import('../src/setup/detect.js');
+    const { mkdtempSync, mkdirSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const home = mkdtempSync(join(tmpdir(), 'claudial-home-'));
+    expect(hasCursor(home)).toBe(false);
+    mkdirSync(join(home, '.cursor'));
+    expect(hasCursor(home)).toBe(true);
+  });
+});

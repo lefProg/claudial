@@ -1,0 +1,79 @@
+{
+  "name": "claudial",
+  "displayName": "claudial: live football",
+  "description": "Live football scores for your teams in the status bar. Goals and red cards flash the moment they happen.",
+  "version": "0.8.0",
+  "publisher": "lefprog",
+  "license": "MIT",
+  "icon": "icon.png",
+  "homepage": "https://github.com/lefProg/claudial#readme",
+  "bugs": {
+    "url": "https://github.com/lefProg/claudial/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lefProg/claudial"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "football",
+    "soccer",
+    "live scores",
+    "premier league",
+    "status bar",
+    "claude code",
+    "cursor"
+  ],
+  "galleryBanner": {
+    "color": "#1a1a1a",
+    "theme": "dark"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claudial.follow",
+        "title": "Follow teams",
+        "category": "claudial"
+      },
+      {
+        "command": "claudial.refresh",
+        "title": "Refresh scores",
+        "category": "claudial"
+      }
+    ],
+    "configuration": {
+      "title": "claudial",
+      "properties": {
+        "claudial.serverUrl": {
+          "type": "string",
+          "default": "",
+          "description": "claudial server to use. Leave empty for the public claudial server."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc -p .",
+    "package": "npm run typecheck && node build.mjs && vsce package --no-dependencies --baseImagesUrl https://raw.githubusercontent.com/lefProg/claudial/main/extension/ --baseContentUrl https://github.com/lefProg/claudial/blob/main/extension/",
+    "publish:vsce": "vsce publish --no-dependencies --baseImagesUrl https://raw.githubusercontent.com/lefProg/claudial/main/extension/ --baseContentUrl https://github.com/lefProg/claudial/blob/main/extension/",
+    "publish:ovsx": "ovsx publish --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "1.85.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.0",
+    "ovsx": "^1.2.0",
+    "typescript": "^5.5.0"
+  }
+}

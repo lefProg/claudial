@@ -21,8 +21,13 @@ export interface RedCardEvent {
 // TLS; scripts/check-release.mjs blocks an npm publish until this is https://.
 // CLAUDIAL_API_URL always wins (local dev: http://localhost:8080).
 export const DEFAULT_API_URL = 'http://161.97.67.12:30083';
+let serverOverride: string | null = null;
+/** For embedders (the editor extension): a server chosen in settings. The env var still wins. */
+export function setServerUrl(url: string | null): void {
+  serverOverride = url && url.trim() ? url.trim() : null;
+}
 export function apiUrl(env: NodeJS.ProcessEnv = process.env): string {
-  return (env.CLAUDIAL_API_URL || DEFAULT_API_URL).replace(/\/+$/, '');
+  return (env.CLAUDIAL_API_URL || serverOverride || DEFAULT_API_URL).replace(/\/+$/, '');
 }
 
 // ── Server shapes (docs/API.md in claudial-backend) ─────────────────────────

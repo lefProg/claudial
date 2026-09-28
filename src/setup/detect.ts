@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 export type Shell = 'zsh' | 'bash' | 'fish';
@@ -27,6 +28,11 @@ export function isOnPath(bin: string): boolean {
     execFileSync(probe, [bin], { stdio: ['ignore', 'ignore', 'ignore'] });
     return true;
   } catch { return false; }
+}
+
+/** Cursor (editor or CLI) has been used on this machine. */
+export function hasCursor(home: string): boolean {
+  return existsSync(join(home, '.cursor'));
 }
 
 export function hasTmux(): boolean {

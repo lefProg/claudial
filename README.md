@@ -2,10 +2,10 @@
 
 # ⚽ claudial
 
-### Live football inside Claude Code
+### Live football inside Claude Code, Cursor and your editor
 
-Your teams' scores sit under your prompt while you code.
-When one of them scores, your terminal celebrates.
+Your teams' scores sit in your status bar while you code: Claude Code, Cursor,
+VS Code, Antigravity, Windsurf. When one of them scores, it celebrates.
 
 ```
 npm install -g claudial && claudial setup
@@ -37,7 +37,7 @@ Europa League · Conference League · Super League Greece · World Cup**
 | You are… | Run |
 |---|---|
 | **New to claudial** | `npm install -g claudial`<br>`claudial setup` |
-| **Back from the World Cup** (you have 0.6.x) | `npm install -g claudial@latest`<br>`claudial --version` (should print 0.7.0 or newer)<br>`claudial follow` |
+| **Back from the World Cup** (you have 0.6.x) | `npm install -g claudial@latest`<br>`claudial --version` (should print 0.8.0 or newer)<br>`claudial follow` |
 
 Then restart Claude Code. World Cup users keep their status line as it is; `claudial follow`
 picks your leagues and teams, because the new version starts following nothing.
@@ -45,6 +45,29 @@ picks your leagues and teams, because the new version starts following nothing.
 Still seeing "WORLD CUP 2026" after updating? An old copy comes first on your PATH.
 `which -a claudial` lists every copy; remove the old one with
 `npm uninstall -g --prefix <its folder> claudial` (e.g. `--prefix ~/.npm-global`).
+
+## Works where you code
+
+| Where you code | Run |
+|---|---|
+| **Claude Code** | `npm install -g claudial && claudial setup` |
+| **Cursor CLI** (`cursor-agent`) | `npm install -g claudial && claudial setup --cursor --yes` |
+| **VS Code** | `code --install-extension lefprog.claudial` |
+| **Cursor** | `cursor --install-extension lefprog.claudial` |
+| **Antigravity** | `antigravity --install-extension lefprog.claudial` |
+| **Windsurf** | `windsurf --install-extension lefprog.claudial` |
+| **Codex CLI** | not yet: Codex's status line can only show its own built-in items |
+
+In the editors you can also search **claudial** in the Extensions panel. Reload the
+window after installing; the score sits at the bottom right. Click it to pick your
+teams. The editor extension and the CLI share your device, so you follow the same
+teams everywhere.
+
+<div align="center">
+
+![claudial in the editor status bar: VS Code during Liverpool 6—0 and the GOOOL flash for 7—0, and Cursor showing the next kickoff](extension/images/statusbar.png)
+
+</div>
 
 ## The score, right under your prompt
 
@@ -114,10 +137,11 @@ claudial follow       # pick leagues and teams
 
 Requires Node ≥ 18. No account, no sign-up, no API key.
 
-Scripting it? `claudial setup --statusline --yes` installs without
-prompts, and `claudial leagues`, `claudial teams <league>`,
-`claudial follow <id>...`, `claudial unfollow <id>...` and `claudial following`
-work without the UI. `claudial forget` deletes your device from the server.
+Scripting it? `claudial setup --statusline --yes` (Claude Code) and
+`claudial setup --cursor --yes` (Cursor CLI) install without prompts, and
+`claudial leagues`, `claudial teams <league>`, `claudial follow <id>...`,
+`claudial unfollow <id>...` and `claudial following` work without the UI.
+`claudial forget` deletes your device from the server.
 
 ## Status
 

@@ -5,22 +5,8 @@ import type { Prediction } from '../predictions/types.js';
 import { matchPrediction } from '../predictions/match.js';
 import { fullSlate, headline } from '../predictions/format.js';
 
-export function formatKickoff(ts: number, now: number = Date.now()): string {
-  const d = new Date(ts * 1000);
-  const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-  const sameDay = d.toDateString() === new Date(now).toDateString();
-  if (sameDay) return time;
-  // Within the week a weekday is enough; further out (fixtures reach ~3 weeks) add the date.
-  const soon = ts * 1000 - now < 6 * 86_400_000;
-  const day = d.toLocaleDateString(undefined, soon ? { weekday: 'short' } : { weekday: 'short', day: 'numeric', month: 'short' });
-  return `${day} ${time}`;
-}
-
-/** The kickoff padded to `width` (default: fits the longest date format), always followed by a space. */
-export function kickoffColumn(ts: number, now: number = Date.now(), width: number = 22): string {
-  const k = formatKickoff(ts, now);
-  return k.length >= width - 1 ? `${k} ` : k.padEnd(width);
-}
+export { formatKickoff, kickoffColumn } from './kickoff.js';
+import { formatKickoff, kickoffColumn, kickoffWidth } from './kickoff.js';
 
 export function UpcomingSection({
   matches,
@@ -34,7 +20,7 @@ export function UpcomingSection({
   const shown = matches.slice(0, compact ? 1 : 8);
   if (shown.length === 0) return null;
   // One column for the whole list: as wide as its longest kickoff, plus a gap.
-  const width = Math.max(...shown.map((m) => formatKickoff(m.startTimestamp).length)) + 2;
+  const width = kickoffWidth(shown.map((m) => m.startTimestamp));
   if (compact) {
     const m = shown[0];
     const pred = matchPrediction(m, predictions);

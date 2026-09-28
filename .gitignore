@@ -26,3 +26,8 @@ DATA.md
 /predictions/
 # fablize goal tracker (local)
 .fablize/
+
+# editor extension build output
+extension/node_modules/
+extension/dist/
+*.vsix

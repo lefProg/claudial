@@ -153,3 +153,21 @@ describe('deviceId', () => {
     expect(readFileSync(join(dir, 'device-id'), 'utf8').trim()).toBe(a);
   });
 });
+
+describe('setServerUrl', () => {
+  it('is used when the env var is not set, and cleared with null', async () => {
+    const { setServerUrl, apiUrl, DEFAULT_API_URL } = await import('../src/api/backend.js');
+    const saved = process.env.CLAUDIAL_API_URL; delete process.env.CLAUDIAL_API_URL;
+    try {
+      setServerUrl('https://scores.example/');
+      expect(apiUrl()).toBe('https://scores.example');
+      process.env.CLAUDIAL_API_URL = 'http://env.test';
+      expect(apiUrl()).toBe('http://env.test');
+      delete process.env.CLAUDIAL_API_URL;
+      setServerUrl(null);
+      expect(apiUrl()).toBe(DEFAULT_API_URL);
+      setServerUrl('   ');
+      expect(apiUrl()).toBe(DEFAULT_API_URL);
+    } finally { setServerUrl(null); process.env.CLAUDIAL_API_URL = saved; }
+  });
+});

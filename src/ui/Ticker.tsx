@@ -1,6 +1,6 @@
 import { Box, Text } from 'ink';
 import type { Match, Takeover } from '../types.js';
-import { formatKickoff } from './UpcomingSection.js';
+import { formatKickoff } from './kickoff.js';
 import { ACCENT, RED } from './Header.js';
 import { spacedCaps } from '../banner.js';
 import { homeName, awayName } from './flags.js';

@@ -1,7 +1,7 @@
 {
   "name": "claudial",
-  "version": "0.7.1",
-  "description": "Live football scores for your leagues and teams, in your terminal and Claude Code's status bar — goal and red-card takeovers included",
+  "version": "0.8.0",
+  "description": "Live football for your teams in the status bar of Claude Code and Cursor CLI, plus a terminal dashboard with goal and red-card takeovers",
   "type": "module",
   "bin": {
     "claudial": "dist/index.js"
@@ -35,10 +35,13 @@
     "worldcup",
     "tui",
     "cli",
-    "football",
     "soccer",
     "live-scores",
-    "ink"
+    "ink",
+    "cursor",
+    "vscode",
+    "antigravity",
+    "statusline"
   ],
   "license": "MIT",
   "repository": {

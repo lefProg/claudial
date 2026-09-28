@@ -31,3 +31,12 @@ describe('kickoffColumn width', () => {
     expect(kickoffColumn(at(3), now, 14).length).toBe(14);
   });
 });
+
+describe('kickoffWidth', () => {
+  it('fits the longest kickoff in a list plus a two-space gap', async () => {
+    const { kickoffWidth, formatKickoff: f } = await import('../src/ui/kickoff.js');
+    const list = [at(3), at(13)];
+    expect(kickoffWidth(list, now)).toBe(Math.max(...list.map((t) => f(t, now).length)) + 2);
+    expect(kickoffWidth([], now)).toBe(22);
+  });
+});

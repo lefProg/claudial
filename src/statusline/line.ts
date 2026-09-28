@@ -1,5 +1,5 @@
 import type { Match } from '../types.js';
-import { formatKickoff } from '../ui/UpcomingSection.js';
+import { formatKickoff } from '../ui/kickoff.js';
 import { homeName, awayName } from '../ui/flags.js';
 import type { Prediction } from '../predictions/types.js';
 import { matchPrediction } from '../predictions/match.js';

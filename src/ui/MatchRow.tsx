@@ -1,7 +1,7 @@
 import { Box, Text } from 'ink';
 import type { Match, MatchIncident } from '../types.js';
 import { ACCENT } from './Header.js';
-import { formatKickoff, kickoffColumn } from './UpcomingSection.js';
+import { formatKickoff, kickoffColumn } from './kickoff.js';
 import { homeName, awayName } from './flags.js';
 
 /** One side's goals grouped by scorer, in order of their first goal: "43' 50' C. Gakpo · 47' D. Núñez". */

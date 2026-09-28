@@ -27,8 +27,9 @@ const HELP = `claudial: live football in your terminal and Claude Code's status 
   claudial                             the live dashboard (keys: f follow · r refresh · q quit)
   claudial --ticker                    a 4-line strip for slim split panes
   claudial | cat                       plain snapshot for pipes and scripts
-  claudial setup                       install the Claude Code status line and pick your teams
-  claudial setup --statusline --yes    install the status line only, no prompts
+  claudial setup                       install the status line (Claude Code, Cursor CLI) and pick your teams
+  claudial setup --statusline --yes    Claude Code status line only, no prompts
+  claudial setup --cursor --yes        Cursor CLI status line only, no prompts
 ${USAGE.replace(/^usage:\n/, '')}
 
   CLAUDIAL_API_URL=<url>               use another claudial server`;

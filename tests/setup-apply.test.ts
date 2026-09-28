@@ -10,6 +10,7 @@ beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'claudial-apply-'));
   ctx = {
     settingsPath: join(dir, '.claude', 'settings.json'),
+    cursorPath: join(dir, '.cursor', 'cli-config.json'),
     rcPath: join(dir, '.zshrc'),
     shell: 'zsh',
     command: 'claudial --statusline',
@@ -46,5 +47,14 @@ describe('applySetup', () => {
     expect(report.statuslineWritten).toBe(false);
     expect(report.aliasAppended).toBe(false);
     expect(existsSync(ctx.settingsPath)).toBe(false);
+  });
+
+  it('installs into Cursor CLI when asked, and only then', () => {
+    const base = { statusline: false, scope: 'global' as const, tmux: false, shell: 'zsh' as const, yes: true, interactive: false };
+    expect(applySetup({ ...base, cursor: false }, ctx).cursorWritten).toBe(false);
+    expect(existsSync(ctx.cursorPath)).toBe(false);
+    const r = applySetup({ ...base, cursor: true }, ctx);
+    expect(r.cursorWritten).toBe(true);
+    expect(JSON.parse(readFileSync(ctx.cursorPath, 'utf8')).statusLine).toMatchObject({ command: 'claudial --statusline', updateIntervalMs: 1000 });
   });
 });
