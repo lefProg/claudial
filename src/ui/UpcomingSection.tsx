@@ -1,6 +1,6 @@
 import { Box, Text } from 'ink';
 import type { Match } from '../types.js';
-import { homeTag, awayTag } from './flags.js';
+import { homeName, awayName } from './flags.js';
 import type { Prediction } from '../predictions/types.js';
 import { matchPrediction } from '../predictions/match.js';
 import { fullSlate, headline } from '../predictions/format.js';
@@ -16,6 +16,12 @@ export function formatKickoff(ts: number, now: number = Date.now()): string {
   return `${day} ${time}`;
 }
 
+/** The kickoff padded to `width` (default: fits the longest date format), always followed by a space. */
+export function kickoffColumn(ts: number, now: number = Date.now(), width: number = 22): string {
+  const k = formatKickoff(ts, now);
+  return k.length >= width - 1 ? `${k} ` : k.padEnd(width);
+}
+
 export function UpcomingSection({
   matches,
   compact,
@@ -27,12 +33,14 @@ export function UpcomingSection({
 }) {
   const shown = matches.slice(0, compact ? 1 : 8);
   if (shown.length === 0) return null;
+  // One column for the whole list: as wide as its longest kickoff, plus a gap.
+  const width = Math.max(...shown.map((m) => formatKickoff(m.startTimestamp).length)) + 2;
   if (compact) {
     const m = shown[0];
     const pred = matchPrediction(m, predictions);
     return (
       <Box flexDirection="column">
-        <Text dimColor>○ {homeTag(m.home.code, m.home.national)} — {awayTag(m.away.code, m.away.national)} {formatKickoff(m.startTimestamp)}</Text>
+        <Text dimColor>○ {homeName(m.home)} — {awayName(m.away)} {formatKickoff(m.startTimestamp)}</Text>
         {pred ? <Text color="yellow">{headline(pred)}</Text> : null}
       </Box>
     );
@@ -46,8 +54,8 @@ export function UpcomingSection({
         return (
           <Box key={m.id} flexDirection="column">
             <Text>
-              <Text dimColor>○ {formatKickoff(m.startTimestamp).padEnd(13)}</Text>
-              {homeTag(m.home.code, m.home.national)} — {awayTag(m.away.code, m.away.national)}
+              <Text dimColor>○ {kickoffColumn(m.startTimestamp, Date.now(), width)}</Text>
+              {homeName(m.home)} — {awayName(m.away)}
               {m.group ? <Text dimColor>  ·  {m.group}</Text> : null}
             </Text>
             {pred && i === 0

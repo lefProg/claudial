@@ -50,3 +50,15 @@ export function awayTag(code: string, national: boolean = true): string {
   const f = national ? flagFor(code) : '';
   return f ? `${f} ${code}` : code;
 }
+
+/** Home side by full name, for the roomy views: "Qatar 🇶🇦", or "Arsenal" for a club. */
+export function homeName(t: { name: string; code: string; national?: boolean }): string {
+  const f = t.national !== false ? flagFor(t.code) : '';
+  return f ? `${t.name} ${f}` : t.name;
+}
+
+/** Away side by full name: "🇨🇭 Switzerland", or "Liverpool" for a club. */
+export function awayName(t: { name: string; code: string; national?: boolean }): string {
+  const f = t.national !== false ? flagFor(t.code) : '';
+  return f ? `${f} ${t.name}` : t.name;
+}

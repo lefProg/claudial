@@ -57,7 +57,7 @@ describe('goal window', () => {
     c.updateGoalState([live({ homeScore: 1, awayScore: 0 })], 2000);
     const fired = c.activeGoalLine(2000);
     expect(fired).toContain('G O O O L');
-    expect(fired).toContain('ARG 🇦🇷 1—0 🇲🇽 MEX');
+    expect(fired).toContain('Argentina 🇦🇷 1—0 🇲🇽 Mexico');
     expect(c.activeGoalLine(2000 + GOAL_WINDOW_MS + 1)).toBeNull();
   });
   it('wraps the celebration in a real ANSI escape (ESC byte present)', () => {
@@ -73,7 +73,7 @@ describe('goal window', () => {
     c.armGoal(live({ home: { name: 'Argentina', code: 'ARG' }, away: { name: 'England', code: 'ENG' }, homeScore: 1, awayScore: 2 }), 1000);
     const fired = c.activeGoalLine(1000);
     expect(fired).toContain('G O O O L');
-    expect(fired).toContain('ARG');
+    expect(fired).toContain('Argentina');
     expect(c.activeGoalLine(1000 + GOAL_WINDOW_MS + 1)).toBeNull();
   });
 });

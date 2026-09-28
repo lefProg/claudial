@@ -1,6 +1,6 @@
 import type { Match } from '../types.js';
 import { formatKickoff } from '../ui/UpcomingSection.js';
-import { homeTag, awayTag } from '../ui/flags.js';
+import { homeName, awayName } from '../ui/flags.js';
 import type { Prediction } from '../predictions/types.js';
 import { matchPrediction } from '../predictions/match.js';
 import { headline } from '../predictions/format.js';
@@ -15,12 +15,12 @@ export function liveLine(match: Match): string {
     match.status === 'halftime' ? ' HT'
     : match.minute != null ? ` ${match.minute}'`
     : '';
-  return `⚽ ${homeTag(match.home.code, match.home.national)} ${match.homeScore ?? 0}—${match.awayScore ?? 0} ${awayTag(match.away.code, match.away.national)}${clock}`;
+  return `⚽ ${homeName(match.home)} ${match.homeScore ?? 0}—${match.awayScore ?? 0} ${awayName(match.away)}${clock}`;
 }
 
 /** A finished match with its result: "⚽ QAT 🇶🇦 2—1 🇨🇭 SUI FT". */
 export function finishedLine(match: Match): string {
-  return `⚽ ${homeTag(match.home.code, match.home.national)} ${match.homeScore ?? 0}—${match.awayScore ?? 0} ${awayTag(match.away.code, match.away.national)} FT`;
+  return `⚽ ${homeName(match.home)} ${match.homeScore ?? 0}—${match.awayScore ?? 0} ${awayName(match.away)} FT`;
 }
 
 /**
@@ -28,7 +28,7 @@ export function finishedLine(match: Match): string {
  * appended when one is available: "… · 🔮 BRA win 64% · 2-1".
  */
 function upcomingLine(match: Match, now: number, preds: Prediction[]): string {
-  const base = `○ ${homeTag(match.home.code, match.home.national)} — ${awayTag(match.away.code, match.away.national)} ${formatKickoff(match.startTimestamp, now)}`;
+  const base = `○ ${homeName(match.home)} — ${awayName(match.away)} ${formatKickoff(match.startTimestamp, now)}`;
   const pred = matchPrediction(match, preds);
   return pred ? `${base} · ${headline(pred)}` : base;
 }

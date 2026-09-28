@@ -1,12 +1,12 @@
 import { fetchLive, fetchRecent, fetchUpcoming, followsNothing } from './api/backend.js';
-import { formatKickoff } from './ui/UpcomingSection.js';
-import { homeTag, awayTag } from './ui/flags.js';
+import { kickoffColumn } from './ui/UpcomingSection.js';
+import { homeName, awayName } from './ui/flags.js';
 import type { Match } from './types.js';
 
 function line(m: Match): string {
-  if (m.status === 'upcoming') return `o ${formatKickoff(m.startTimestamp).padEnd(13)} ${homeTag(m.home.code, m.home.national)} - ${awayTag(m.away.code, m.away.national)}`;
+  if (m.status === 'upcoming') return `o ${kickoffColumn(m.startTimestamp)}${homeName(m.home)} - ${awayName(m.away)}`;
   const label = m.status === 'finished' ? 'FT' : m.status === 'halftime' ? 'HT' : `${m.minute ?? '?'}'`;
-  return `* ${label.padEnd(4)} ${homeTag(m.home.code, m.home.national)} ${m.homeScore ?? '-'} - ${m.awayScore ?? '-'} ${awayTag(m.away.code, m.away.national)}`;
+  return `* ${label.padEnd(4)} ${homeName(m.home)} ${m.homeScore ?? '-'} - ${m.awayScore ?? '-'} ${awayName(m.away)}`;
 }
 
 export async function printSnapshot(seasonId: number): Promise<void> {

@@ -83,7 +83,7 @@ async function main(): Promise<void> {
 
   if (args.includes('--mock-redcard')) {
     const { makeCache } = await import('./statusline/cache.js');
-    makeCache().armRedCard({ player: 'Otamendi', homeCode: 'ARG', awayCode: 'ENG' });
+    makeCache().armRedCard({ player: 'Otamendi', homeCode: 'ARG', awayCode: 'ENG', homeName: 'Argentina', awayName: 'England' });
     process.stdout.write('🟥 RED armed — the Claude Code status bar flashes a red card (ARG—ENG) for 15s.\n');
     process.exit(0);
   }

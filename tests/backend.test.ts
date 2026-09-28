@@ -66,7 +66,7 @@ describe('fetchState and the split functions', () => {
     expect(live.map((m) => m.id)).toEqual([760416]);
     expect(recent.map((m) => m.id)).toEqual([2]);
     expect(upcoming.map((m) => m.id)).toEqual([3]);
-    expect(reds).toEqual([{ id: 'i1', homeCode: 'PAO', awayCode: 'PAN', player: 'S. One', minute: 60, national: false }]);
+    expect(reds).toEqual([{ id: 'i1', homeCode: 'PAO', awayCode: 'PAN', homeName: 'Panathinaikos', awayName: 'Panetolikos', player: 'S. One', minute: 60, national: false }]);
   });
 
   it('does not cache a failure', async () => {

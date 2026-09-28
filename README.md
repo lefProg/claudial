@@ -23,7 +23,7 @@ npm install -g claudial && claudial setup
 
 <br/>
 
-![claudial: a live football board in the terminal, taken over by a full-screen GOAL](dashboard.gif)
+![claudial: Liverpool 6–0 Manchester United live, then a full-screen GOAL for Firmino's 88th-minute seventh](dashboard.gif)
 
 **Premier League · La Liga · Serie A · Bundesliga · Ligue 1 · Champions League ·
 Europa League · Conference League · Super League Greece · World Cup**
@@ -53,15 +53,15 @@ of the way while Claude works, and lights up the moment anyone scores:
 
 <div align="center">
 
-![claudial: live scores in Claude Code's status bar, flashing GOOOL on a goal](demo.gif)
+![claudial: Liverpool 7–0 Manchester United flashing GOOOL in Claude Code's status bar](demo.gif)
 
 </div>
 
 ```
-⚽ ARS 1—1 LIV 77'  ⚽ PAO 1—0 OLY 67'  ⚽ RMA 2—2 BAR HT · main   ← every match you follow
-⚽ G O O O L  ·  ARS 2—1 LIV · main                              ← for 15 s after a goal
-🟥 R E D  ·  VAN DIJK  ·  ARS — LIV · main                        ← for 15 s after a red card
-○ FCB — PSG Sun 07:00 PM · main                                  ← between matches: next kickoff
+⚽ Liverpool 6—0 Manchester United 87' · main                      ← every match you follow
+⚽ G O O O L  ·  Liverpool 7—0 Manchester United · main            ← for 15 s after a goal
+🟥 R E D  ·  CASEMIRO  ·  Manchester United — Southampton · main   ← for 15 s after a red card
+○ Liverpool — Arsenal Sat 05:30 PM · main                          ← between matches: next kickoff
 ```
 
 Your git branch stays at the end. **Already run a custom status line?** Setup
@@ -76,11 +76,11 @@ esc to save:
 ```
  claudial · what do you follow?
 
- search › pana▏
+ search › liver▏
 
- › ◉ Panathinaikos  PAO · Super League Greece
+ › ◉ Liverpool  LIV · Premier League
 
- Following Panathinaikos · Arsenal
+ Following Liverpool
  ↑↓ move · space follow · type to search · esc clear search · ctrl+c cancel
 ```
 
@@ -172,5 +172,9 @@ npm test        # vitest
 [Report a bug](https://github.com/lefProg/claudial/issues) ·
 [Request a feature](https://github.com/lefProg/claudial/issues) ·
 [npm](https://www.npmjs.com/package/claudial)
+
+<br/>
+
+**YNWA** 🔴
 
 </div>

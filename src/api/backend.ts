@@ -10,6 +10,8 @@ export interface RedCardEvent {
   id: string; // stable per incident — used to fire each red once
   homeCode: string;
   awayCode: string;
+  homeName?: string; // full names for the red-card flash; codes are the fallback
+  awayName?: string;
   player: string;
   minute: number | null;
   national: boolean; // national teams get flags in the red-card flash
@@ -146,7 +148,7 @@ export async function fetchLiveRedCards(): Promise<RedCardEvent[]> {
     if (!isLive(m)) continue;
     for (const inc of sm.incidents) {
       if (inc.kind === 'redCard') {
-        out.push({ id: inc.id, homeCode: m.home.code, awayCode: m.away.code, player: inc.playerShort ?? inc.player ?? '?', minute: inc.minute, national: m.home.national !== false });
+        out.push({ id: inc.id, homeCode: m.home.code, awayCode: m.away.code, homeName: m.home.name, awayName: m.away.name, player: inc.playerShort ?? inc.player ?? '?', minute: inc.minute, national: m.home.national !== false });
       }
     }
   }

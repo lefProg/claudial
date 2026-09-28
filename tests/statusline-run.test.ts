@@ -104,11 +104,11 @@ describe('runStatusline', () => {
   });
   it('fetches, caches and appends the branch', async () => {
     const out = await runStatusline('{}', deps(), 1000);
-    expect(out).toBe("⚽ QAT 🇶🇦 0—1 🇨🇭 SUI 67' · main");
+    expect(out).toBe("⚽ Qatar 🇶🇦 0—1 🇨🇭 Switzerland 67' · main");
   });
   it('omits the separator when there is no branch', async () => {
     const out = await runStatusline('{}', deps({ branchOf: () => null }), 1000);
-    expect(out).toBe("⚽ QAT 🇶🇦 0—1 🇨🇭 SUI 67'");
+    expect(out).toBe("⚽ Qatar 🇶🇦 0—1 🇨🇭 Switzerland 67'");
   });
   it('falls back to cache when the fetch throws', async () => {
     const c = makeCache(dir);
@@ -132,7 +132,7 @@ describe('runStatusline', () => {
     const c = makeCache(dir);
     const down = { fetchLive: async () => { throw new Error('network'); }, branchOf: () => null, cache: c };
     const good = await runStatusline('{}', deps({ branchOf: () => null, cache: c }), 1_000);
-    expect(good).toContain('QAT');
+    expect(good).toContain('Qatar');
     expect(await runStatusline('{}', deps(down), 1_000 + 60_000)).toBe(good);
     expect(await runStatusline('{}', deps(down), 1_000 + OFFLINE_AFTER_MS + 1)).toBe(OFFLINE);
   });
@@ -161,6 +161,6 @@ describe('runStatusline', () => {
       fetchUpcoming: async () => [] as Match[],
       branchOf: () => null,
     }), now);
-    expect(out).toBe('⚽ ITA 3—0 PER FT');
+    expect(out).toBe('⚽ Italy 3—0 Peru FT');
   });
 });

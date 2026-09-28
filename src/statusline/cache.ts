@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Match } from '../types.js';
 import type { RedCardEvent } from '../api/backend.js';
-import { homeTag, awayTag } from '../ui/flags.js';
+import { homeName, awayName } from '../ui/flags.js';
 
 export const TTL_MS = 10_000;
 export const GOAL_WINDOW_MS = 15_000;
@@ -19,11 +19,15 @@ const GOAL_CLOSE = '\x1b[0m';
 const RED_OPEN = '\x1b[1;38;2;229;72;77m';
 
 function goalText(m: Match): string {
-  return `${GOAL_OPEN}⚽ G O O O L  ·  ${homeTag(m.home.code, m.home.national)} ${m.homeScore ?? 0}—${m.awayScore ?? 0} ${awayTag(m.away.code, m.away.national)}${GOAL_CLOSE}`;
+  return `${GOAL_OPEN}⚽ G O O O L  ·  ${homeName(m.home)} ${m.homeScore ?? 0}—${m.awayScore ?? 0} ${awayName(m.away)}${GOAL_CLOSE}`;
 }
 
-function redCardText(rc: { player: string; homeCode: string; awayCode: string; national?: boolean }): string {
-  return `${RED_OPEN}🟥 R E D  ·  ${rc.player.toUpperCase()}  ·  ${homeTag(rc.homeCode, rc.national)} — ${awayTag(rc.awayCode, rc.national)}${GOAL_CLOSE}`;
+type RedCardTeams = { player: string; homeCode: string; awayCode: string; homeName?: string; awayName?: string; national?: boolean };
+
+function redCardText(rc: RedCardTeams): string {
+  const home = homeName({ name: rc.homeName ?? rc.homeCode, code: rc.homeCode, national: rc.national });
+  const away = awayName({ name: rc.awayName ?? rc.awayCode, code: rc.awayCode, national: rc.national });
+  return `${RED_OPEN}🟥 R E D  ·  ${rc.player.toUpperCase()}  ·  ${home} — ${away}${GOAL_CLOSE}`;
 }
 
 export interface StatuslineCache {
@@ -35,7 +39,7 @@ export interface StatuslineCache {
   armGoal(match: Match, now?: number): void;
   activeGoalLine(now?: number): string | null;
   updateRedCards(reds: RedCardEvent[], now?: number): void;
-  armRedCard(rc: { player: string; homeCode: string; awayCode: string; national?: boolean }, now?: number): void;
+  armRedCard(rc: RedCardTeams, now?: number): void;
   activeRedCardLine(now?: number): string | null;
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatKickoff } from '../src/ui/UpcomingSection.js';
+import { formatKickoff, kickoffColumn } from '../src/ui/UpcomingSection.js';
 
 const now = Date.UTC(2026, 8, 27, 12, 0); // Sun 27 Sep 2026
 const at = (days: number) => Math.floor((now + days * 86_400_000) / 1000);
@@ -13,5 +13,21 @@ describe('formatKickoff', () => {
   });
   it('adds the date further out, so a kickoff weeks away is unambiguous', () => {
     expect(formatKickoff(at(13), now)).toMatch(/Oct/);
+  });
+});
+
+describe('kickoffColumn', () => {
+  it('always leaves a gap before the teams, even for long dates', () => {
+    for (const d of [0.1, 3, 13, 25]) {
+      const col = kickoffColumn(at(d), now);
+      expect(col.endsWith(' ')).toBe(true);
+      expect(col.length).toBeGreaterThanOrEqual(22);
+    }
+  });
+});
+
+describe('kickoffColumn width', () => {
+  it('pads to the given list width, not a fixed 22', () => {
+    expect(kickoffColumn(at(3), now, 14).length).toBe(14);
   });
 });
