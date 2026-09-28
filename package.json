@@ -1,6 +1,6 @@
 {
   "name": "claudial",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Live football scores for your leagues and teams, in your terminal and Claude Code's status bar — goal and red-card takeovers included",
   "type": "module",
   "bin": {
